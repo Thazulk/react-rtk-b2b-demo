@@ -6,10 +6,16 @@ import { useTranslation } from "react-i18next";
 interface ProductCatalogProps {
   products: Product[];
   canManageCart: boolean;
+  isLoading?: boolean;
   onAddToCart?: (product: Product) => void;
 }
 
-export function ProductCatalog({ products, canManageCart, onAddToCart }: ProductCatalogProps) {
+export function ProductCatalog({
+  products,
+  canManageCart,
+  isLoading = false,
+  onAddToCart,
+}: ProductCatalogProps) {
   const { t } = useTranslation();
 
   return (
@@ -19,6 +25,9 @@ export function ProductCatalog({ products, canManageCart, onAddToCart }: Product
         <CardDescription>{t("catalog.description")}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">{t("catalog.loading")}</p>
+        ) : null}
         {products.map((product) => (
           <div key={product.id} className="flex items-center justify-between rounded-lg border p-3">
             <div className="flex flex-col gap-1">
@@ -32,7 +41,7 @@ export function ProductCatalog({ products, canManageCart, onAddToCart }: Product
               </p>
             </div>
             {canManageCart && onAddToCart ? (
-              <Button size="sm" onClick={() => onAddToCart(product)}>
+              <Button size="sm" disabled={isLoading} onClick={() => onAddToCart(product)}>
                 {t("catalog.addToCart")}
               </Button>
             ) : (

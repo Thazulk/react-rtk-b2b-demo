@@ -11,7 +11,7 @@ import {
 } from "redux-persist";
 import createWebStorage from "redux-persist/es/storage/createWebStorage";
 import { authReducer } from "@/store/authSlice";
-import { cartReducer } from "@/store/cartSlice";
+import { dummyJsonApi } from "@/store/dummyJsonApi";
 
 const createNoopStorage = () => ({
   getItem: (_key: string) => Promise.resolve(null),
@@ -30,7 +30,7 @@ const authPersistConfig = {
 
 const rootReducer = combineReducers({
   auth: persistReducer(authPersistConfig, authReducer),
-  cart: cartReducer,
+  [dummyJsonApi.reducerPath]: dummyJsonApi.reducer,
 });
 
 export const store = configureStore({
@@ -40,7 +40,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }),
+    }).concat(dummyJsonApi.middleware),
 });
 
 export const persistor = persistStore(store);

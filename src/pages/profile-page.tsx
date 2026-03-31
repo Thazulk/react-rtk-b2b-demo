@@ -2,8 +2,8 @@ import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { AppNavbar } from "@/components/shared/app-navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { clearSession, selectUser } from "@/store/authSlice";
-import { clearCartState, selectCartItemTypesCount } from "@/store/cartSlice";
+import { clearSession, selectActiveCartId, selectUser } from "@/store/authSlice";
+import { useGetCartByIdQuery } from "@/store/dummyJsonApi";
 import { persistor, useAppDispatch, useAppSelector } from "@/store";
 
 export function ProfilePage() {
@@ -11,11 +11,12 @@ export function ProfilePage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const user = useAppSelector(selectUser);
-  const cartItemTypesCount = useAppSelector(selectCartItemTypesCount);
+  const activeCartId = useAppSelector(selectActiveCartId);
+  const { data: activeCart } = useGetCartByIdQuery(activeCartId ?? 0, { skip: !activeCartId });
+  const cartItemTypesCount = activeCart?.products.length ?? 0;
 
   const handleLogout = () => {
     dispatch(clearSession());
-    dispatch(clearCartState());
     void persistor.purge();
     navigate("/login", { replace: true });
   };

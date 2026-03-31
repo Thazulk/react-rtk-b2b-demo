@@ -19,6 +19,8 @@ export const huHU = {
       password: "Jelszó",
       demoCredentials: "Demó belépési adatok: {{email}} / {{password}}",
       invalidCredentials: "Hibás email vagy jelszó.",
+      requestFailed: "A bejelentkezési kérés sikertelen. Próbáld újra.",
+      loading: "Belépés...",
       submit: "Belépés",
     },
     storefront: {
@@ -35,6 +37,7 @@ export const huHU = {
       routeTitle: "Katalógus",
       title: "Termékkatalógus",
       description: "A katalógus publikus, de kosár műveletekhez bejelentkezés szükséges.",
+      loading: "Termékek betöltése...",
       stockAndPrice: "{{stock}} készlet | {{price}} EUR",
       addToCart: "Kosárba",
       loginRequired: "Belépés szükséges",

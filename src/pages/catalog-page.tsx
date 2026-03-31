@@ -3,14 +3,14 @@ import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { AppNavbar } from "@/components/shared/app-navbar";
 import { ProductCatalog } from "@/features/catalog/components/product-catalog";
-import { mockProducts } from "@/features/catalog/model/mock-products";
+import { clearSession, selectUser, setActiveCartId, selectActiveCartId } from "@/store/authSlice";
 import {
-  clearSession,
-  selectUser,
-  setActiveCartId,
-  selectActiveCartId,
-} from "@/store/authSlice";
-import { addProductToCart, clearCartState, selectCartItemTypesCount } from "@/store/cartSlice";
+  useAddCartMutation,
+  useGetCartByIdQuery,
+  useGetCartsByUserQuery,
+  useGetProductsQuery,
+  useUpdateCartMutation,
+} from "@/store/dummyJsonApi";
 import { persistor, useAppDispatch, useAppSelector } from "@/store";
 
 export function CatalogPage() {
@@ -20,17 +20,72 @@ export function CatalogPage() {
 
   const user = useAppSelector(selectUser);
   const activeCartId = useAppSelector(selectActiveCartId);
-  const cartItemTypesCount = useAppSelector(selectCartItemTypesCount);
+  const [addCart, { isLoading: isAddingCart }] = useAddCartMutation();
+  const [updateCart, { isLoading: isUpdatingCart }] = useUpdateCartMutation();
+
+  const { data: productsData, isLoading: isProductsLoading } = useGetProductsQuery({ limit: 20 });
+  const { data: userCarts, isFetching: isCartsFetching } = useGetCartsByUserQuery(user?.id ?? 0, {
+    skip: !user,
+  });
+  const { data: activeCart } = useGetCartByIdQuery(activeCartId ?? 0, {
+    skip: !activeCartId,
+  });
+
+  const cartItemTypesCount = activeCart?.products.length ?? 0;
 
   useEffect(() => {
-    if (!activeCartId) {
-      dispatch(setActiveCartId(1001));
+    if (activeCartId || !user || !userCarts) {
+      return;
     }
-  }, [activeCartId, dispatch]);
+
+    if (userCarts.carts.length > 0) {
+      dispatch(setActiveCartId(userCarts.carts[0].id));
+      return;
+    }
+
+    const bootstrapCart = async () => {
+      const createdCart = await addCart({
+        userId: user.id,
+        products: [{ id: 1, quantity: 1 }],
+      }).unwrap();
+      dispatch(setActiveCartId(createdCart.id));
+    };
+
+    void bootstrapCart();
+  }, [activeCartId, addCart, dispatch, user, userCarts]);
+
+  const handleAddToCart = async (productId: number) => {
+    if (!activeCartId || !activeCart) {
+      return;
+    }
+
+    const existing = activeCart.products.find((item) => item.id === productId);
+    const nextProducts = activeCart.products.map((item) => ({
+      id: item.id,
+      quantity: item.quantity,
+    }));
+
+    if (existing) {
+      const existingIndex = nextProducts.findIndex((item) => item.id === productId);
+      nextProducts[existingIndex] = {
+        id: productId,
+        quantity: existing.quantity + 1,
+      };
+    } else {
+      nextProducts.push({ id: productId, quantity: 1 });
+    }
+
+    await updateCart({
+      cartId: activeCartId,
+      body: {
+        merge: true,
+        products: nextProducts,
+      },
+    }).unwrap();
+  };
 
   const handleLogout = () => {
     dispatch(clearSession());
-    dispatch(clearCartState());
     void persistor.purge();
     navigate("/login", { replace: true });
   };
@@ -49,8 +104,9 @@ export function CatalogPage() {
 
       <ProductCatalog
         canManageCart
-        products={mockProducts}
-        onAddToCart={(product) => dispatch(addProductToCart(product))}
+        isLoading={isProductsLoading || isCartsFetching || isAddingCart || isUpdatingCart}
+        products={productsData?.products ?? []}
+        onAddToCart={(product) => void handleAddToCart(product.id)}
       />
     </main>
   );

@@ -19,6 +19,8 @@ export const enUS = {
       password: "Password",
       demoCredentials: "Demo credentials: {{email}} / {{password}}",
       invalidCredentials: "Invalid email or password.",
+      requestFailed: "Login request failed. Please try again.",
+      loading: "Signing in...",
       submit: "Sign in",
     },
     storefront: {
@@ -35,6 +37,7 @@ export const enUS = {
       routeTitle: "Catalog",
       title: "Product catalog",
       description: "Catalog is public, but cart operations require sign in.",
+      loading: "Loading products...",
       stockAndPrice: "{{stock}} in stock | {{price}} EUR",
       addToCart: "Add to cart",
       loginRequired: "Login required",

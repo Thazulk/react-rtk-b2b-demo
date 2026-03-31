@@ -1,10 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Product } from "@/types/dummyjson";
 import { useTranslation } from "react-i18next";
 
 export interface CartLineView {
-  product: Product;
+  product: {
+    id: number;
+    title: string;
+    price: number;
+  };
   quantity: number;
 }
 

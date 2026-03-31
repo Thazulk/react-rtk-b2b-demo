@@ -9,13 +9,13 @@ export interface User {
   firstName: string;
   lastName: string;
   maidenName?: string;
-  age: number;
-  gender: string;
+  age?: number;
+  gender?: string;
   email: string;
-  phone: string;
+  phone?: string;
   username: string;
   password?: string;
-  birthDate: string;
+  birthDate?: string;
   image: string;
   bloodGroup?: string;
   height?: number;
@@ -40,6 +40,12 @@ export interface LoginResponse {
   lastName: string;
   gender: string;
   image: string;
+}
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+  expiresInMins?: number;
 }
 
 export interface ProductDimensions {
@@ -107,6 +113,21 @@ export interface Cart {
   userId: number;
   totalProducts: number;
   totalQuantity: number;
+}
+
+export interface CartProductInput {
+  id: number;
+  quantity: number;
+}
+
+export interface AddCartRequest {
+  userId: number;
+  products: CartProductInput[];
+}
+
+export interface UpdateCartRequest {
+  merge: boolean;
+  products: CartProductInput[];
 }
 
 export interface UserListResponse extends PaginationMeta {

@@ -3,14 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import type { Product } from "@/types/dummyjson";
 import { useTranslation } from "react-i18next";
 
-export interface CartLine {
+export interface CartLineView {
   product: Product;
   quantity: number;
 }
 
 interface CartManagerProps {
   activeCartId: number | null;
-  lines: CartLine[];
+  lines: CartLineView[];
   onChangeQuantity: (productId: number, nextQuantity: number) => void;
 }
 

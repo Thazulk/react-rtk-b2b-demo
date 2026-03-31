@@ -8,6 +8,7 @@ interface AppNavbarProps {
   title: string;
   userName?: string;
   cartItemCount?: number;
+  onTitleClick?: () => void;
   onCartClick?: () => void;
   onProfile?: () => void;
   onLogout?: () => void;
@@ -17,6 +18,7 @@ export function AppNavbar({
   title,
   userName,
   cartItemCount = 0,
+  onTitleClick,
   onCartClick,
   onProfile,
   onLogout,
@@ -43,7 +45,17 @@ export function AppNavbar({
   return (
     <header className="fixed inset-x-0 top-0 z-50 h-14 border-b bg-background/95 backdrop-blur">
       <div className="flex h-full w-full items-center justify-between px-4 sm:px-6">
-        <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
+        {onTitleClick ? (
+          <Button
+            variant="ghost"
+            className="h-auto px-0 text-lg font-semibold tracking-tight hover:bg-transparent"
+            onClick={onTitleClick}
+          >
+            {title}
+          </Button>
+        ) : (
+          <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
+        )}
         <div className="flex items-center gap-2">
           <Button
             size="icon-sm"

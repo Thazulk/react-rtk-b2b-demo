@@ -1,4 +1,4 @@
-import { Navigate, Link } from "react-router";
+import { Navigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { AppNavbar } from "@/components/shared/app-navbar";
 import { LoginForm } from "@/features/auth/components/login-form";
@@ -18,13 +18,6 @@ export function LoginPage() {
       <AppNavbar title={t("login.title")} userName={t("navbar.guest")} cartItemCount={0} />
       <section className="flex flex-1 flex-col items-center justify-center gap-6">
         <LoginForm />
-        <p className="text-sm text-muted-foreground">
-          {t("login.browseHintPrefix")}{" "}
-          <Link className="underline underline-offset-2" to="/browse">
-            /browse
-          </Link>{" "}
-          {t("login.browseHintSuffix")}
-        </p>
       </section>
     </main>
   );

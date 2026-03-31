@@ -14,26 +14,14 @@ export const huHU = {
     },
     login: {
       title: "B2B storefront belépés",
-      description: "Demó hitelesítés a storefront folyamatok teszteléséhez.",
-      username: "Felhasználónév",
+      description: "Jelentkezz be az előre definiált DummyJSON demó felhasználóval.",
       email: "Email",
-      firstName: "Keresztnév",
-      lastName: "Vezetéknév",
+      password: "Jelszó",
+      demoCredentials: "Demó belépési adatok: {{email}} / {{password}}",
+      invalidCredentials: "Hibás email vagy jelszó.",
       submit: "Belépés",
-      browseHintPrefix: "Belépés nélkül is megnézheted a katalógust a",
-      browseHintSuffix: "oldalon.",
-    },
-    browse: {
-      title: "B2B storefront (publikus böngészés)",
-      description: "A katalógus nyilvános, de a kosár műveletekhez hitelesített session kell.",
-      loginCtaPrefix: "Ha kosarat is kezelnél, menj a",
-      loginCtaLink: "login oldalra",
     },
     storefront: {
-      title: "B2B storefront",
-      signedInUser: "Bejelentkezett felhasználó: {{name}}",
-      publicBrowse: "Publikus böngészés",
-      logout: "Kijelentkezés",
       notAvailable: "n/a",
     },
     profile: {
@@ -44,6 +32,7 @@ export const huHU = {
       username: "Felhasználónév",
     },
     catalog: {
+      routeTitle: "Katalógus",
       title: "Termékkatalógus",
       description: "A katalógus publikus, de kosár műveletekhez bejelentkezés szükséges.",
       stockAndPrice: "{{stock}} készlet | {{price}} EUR",
@@ -51,6 +40,7 @@ export const huHU = {
       loginRequired: "Belépés szükséges",
     },
     cart: {
+      routeTitle: "Kosár",
       title: "Aktív kosár",
       cartId: "Kosár ID: {{id}}",
       empty: "A kosarad jelenleg üres.",

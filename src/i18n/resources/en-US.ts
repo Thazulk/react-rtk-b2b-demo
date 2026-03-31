@@ -14,26 +14,14 @@ export const enUS = {
     },
     login: {
       title: "B2B storefront login",
-      description: "Demo authentication to test storefront flows.",
-      username: "Username",
+      description: "Sign in with the predefined DummyJSON demo user.",
       email: "Email",
-      firstName: "First name",
-      lastName: "Last name",
+      password: "Password",
+      demoCredentials: "Demo credentials: {{email}} / {{password}}",
+      invalidCredentials: "Invalid email or password.",
       submit: "Sign in",
-      browseHintPrefix: "You can still view the catalog without login on",
-      browseHintSuffix: "page.",
-    },
-    browse: {
-      title: "B2B storefront (public browse)",
-      description: "Catalog is public, but cart operations require authenticated session.",
-      loginCtaPrefix: "To manage carts, go to the",
-      loginCtaLink: "login page",
     },
     storefront: {
-      title: "B2B storefront",
-      signedInUser: "Signed in user: {{name}}",
-      publicBrowse: "Public browse",
-      logout: "Logout",
       notAvailable: "n/a",
     },
     profile: {
@@ -44,6 +32,7 @@ export const enUS = {
       username: "Username",
     },
     catalog: {
+      routeTitle: "Catalog",
       title: "Product catalog",
       description: "Catalog is public, but cart operations require sign in.",
       stockAndPrice: "{{stock}} in stock | {{price}} EUR",
@@ -51,6 +40,7 @@ export const enUS = {
       loginRequired: "Login required",
     },
     cart: {
+      routeTitle: "Cart",
       title: "Active cart",
       cartId: "Cart ID: {{id}}",
       empty: "Your cart is currently empty.",

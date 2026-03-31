@@ -1,15 +1,11 @@
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import { ProtectedLayout } from "@/app/layouts/protected-layout";
-import { BrowsePage } from "@/pages/browse-page";
+import { CartPage } from "@/pages/cart-page";
+import { CatalogPage } from "@/pages/catalog-page";
 import { LoginPage } from "@/pages/login-page";
 import { ProfilePage } from "@/pages/profile-page";
-import { StorefrontPage } from "@/pages/storefront-page";
 
 const router = createBrowserRouter([
-  {
-    path: "/browse",
-    element: <BrowsePage />,
-  },
   {
     path: "/login",
     element: <LoginPage />,
@@ -20,7 +16,15 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <StorefrontPage />,
+        element: <Navigate to="/catalog" replace />,
+      },
+      {
+        path: "catalog",
+        element: <CatalogPage />,
+      },
+      {
+        path: "cart",
+        element: <CartPage />,
       },
       {
         path: "profile",
@@ -30,7 +34,7 @@ const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: <Navigate to="/browse" replace />,
+    element: <Navigate to="/login" replace />,
   },
 ]);
 

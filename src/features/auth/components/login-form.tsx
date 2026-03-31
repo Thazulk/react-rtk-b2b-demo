@@ -8,18 +8,32 @@ import { setSession } from "@/store/authSlice";
 import { useAppDispatch } from "@/store";
 import { useTranslation } from "react-i18next";
 
+const DUMMY_CREDENTIALS = {
+  email: "emily.johnson@x.dummyjson.com",
+  password: "emilyspass",
+};
+
 export function LoginForm() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const [username, setUsername] = useState("buyer.demo");
-  const [email, setEmail] = useState("buyer.demo@example.com");
-  const [firstName, setFirstName] = useState("Buyer");
-  const [lastName, setLastName] = useState("Demo");
+  const [email, setEmail] = useState(DUMMY_CREDENTIALS.email);
+  const [password, setPassword] = useState(DUMMY_CREDENTIALS.password);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    const isValidCredentials =
+      email.trim().toLowerCase() === DUMMY_CREDENTIALS.email && password === DUMMY_CREDENTIALS.password;
+
+    if (!isValidCredentials) {
+      setError(t("login.invalidCredentials"));
+      return;
+    }
+
+    setError(null);
 
     dispatch(
       setSession({
@@ -27,20 +41,20 @@ export function LoginForm() {
         activeCartId: 1001,
         user: {
           id: 1,
-          firstName,
-          lastName,
+          firstName: "Emily",
+          lastName: "Johnson",
           age: 30,
-          gender: "other",
+          gender: "female",
           email,
           phone: "+36-30-000-0000",
-          username,
-          birthDate: "1996-01-01",
-          image: "https://dummyjson.com/icon/emilys/128",
+          username: "emilys",
+          birthDate: "1995-08-14",
+          image: "https://dummyjson.com/icon/emilys/128?type=png",
         },
       }),
     );
 
-    navigate("/", { replace: true });
+    navigate("/catalog", { replace: true });
   };
 
   return (
@@ -52,27 +66,25 @@ export function LoginForm() {
       <CardContent>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="username">{t("login.username")}</Label>
-            <Input id="username" value={username} onChange={(event) => setUsername(event.target.value)} />
-          </div>
-          <div className="flex flex-col gap-2">
             <Label htmlFor="email">{t("login.email")}</Label>
             <Input id="email" value={email} onChange={(event) => setEmail(event.target.value)} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="firstName">{t("login.firstName")}</Label>
-              <Input
-                id="firstName"
-                value={firstName}
-                onChange={(event) => setFirstName(event.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="lastName">{t("login.lastName")}</Label>
-              <Input id="lastName" value={lastName} onChange={(event) => setLastName(event.target.value)} />
-            </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="password">{t("login.password")}</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
           </div>
+          <p className="text-xs text-muted-foreground">
+            {t("login.demoCredentials", {
+              email: DUMMY_CREDENTIALS.email,
+              password: DUMMY_CREDENTIALS.password,
+            })}
+          </p>
+          {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <Button type="submit">{t("login.submit")}</Button>
         </form>
       </CardContent>

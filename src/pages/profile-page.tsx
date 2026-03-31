@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { AppNavbar } from "@/components/shared/app-navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { clearSession, selectUser } from "@/store/authSlice";
+import { clearCartState, selectCartItemTypesCount } from "@/store/cartSlice";
 import { persistor, useAppDispatch, useAppSelector } from "@/store";
 
 export function ProfilePage() {
@@ -10,9 +11,11 @@ export function ProfilePage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const user = useAppSelector(selectUser);
+  const cartItemTypesCount = useAppSelector(selectCartItemTypesCount);
 
   const handleLogout = () => {
     dispatch(clearSession());
+    dispatch(clearCartState());
     void persistor.purge();
     navigate("/login", { replace: true });
   };
@@ -22,7 +25,9 @@ export function ProfilePage() {
       <AppNavbar
         title={t("profile.title")}
         userName={user ? `${user.firstName} ${user.lastName}` : t("navbar.guest")}
-        cartItemCount={0}
+        cartItemCount={cartItemTypesCount}
+        onTitleClick={() => navigate("/catalog")}
+        onCartClick={() => navigate("/cart")}
         onProfile={() => navigate("/profile")}
         onLogout={handleLogout}
       />

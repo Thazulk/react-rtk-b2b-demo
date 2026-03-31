@@ -1,8 +1,8 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { User } from "@/types/dummyjson";
-import type { RootState } from "./index";
+import type { RootState } from "@/store/store";
 
-interface AuthState {
+export interface AuthState {
   accessToken: string | null;
   user: User | null;
   activeCartId: number | null;

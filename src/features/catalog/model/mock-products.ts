@@ -1,0 +1,43 @@
+import type { Product } from "@/types/dummyjson";
+
+export const mockProducts: Product[] = [
+  {
+    id: 101,
+    title: "Industrial Safety Gloves",
+    description: "Durable work gloves for warehouse and logistics teams.",
+    category: "industrial-safety",
+    price: 18.9,
+    discountPercentage: 5.5,
+    rating: 4.5,
+    stock: 240,
+    tags: ["safety", "warehouse", "ppe"],
+    images: ["https://dummyjson.com/image/400x300?text=Gloves"],
+    thumbnail: "https://dummyjson.com/image/200x150?text=Gloves",
+  },
+  {
+    id: 102,
+    title: "Barcode Scanner Pro",
+    description: "Fast handheld scanner for B2B order fulfillment.",
+    category: "warehouse-devices",
+    price: 129.0,
+    discountPercentage: 7.2,
+    rating: 4.7,
+    stock: 58,
+    tags: ["scanner", "hardware"],
+    images: ["https://dummyjson.com/image/400x300?text=Scanner"],
+    thumbnail: "https://dummyjson.com/image/200x150?text=Scanner",
+  },
+  {
+    id: 103,
+    title: "Packing Tape Bundle",
+    description: "High-adhesion tape pack for daily shipping operations.",
+    category: "packaging",
+    price: 24.5,
+    discountPercentage: 3.5,
+    rating: 4.2,
+    stock: 500,
+    tags: ["packaging", "shipping"],
+    images: ["https://dummyjson.com/image/400x300?text=Tape"],
+    thumbnail: "https://dummyjson.com/image/200x150?text=Tape",
+  },
+];

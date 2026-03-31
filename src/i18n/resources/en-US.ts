@@ -10,6 +10,7 @@ export const enUS = {
       language: "Language",
       logout: "Logout",
       guest: "Guest",
+      cart: "Cart",
     },
     login: {
       title: "B2B storefront login",

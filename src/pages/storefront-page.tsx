@@ -54,16 +54,22 @@ export function StorefrontPage() {
   };
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-6xl flex-col gap-6 p-6">
+    <main className="mx-auto flex min-h-svh w-full max-w-6xl flex-col gap-6 px-6 pb-6 pt-14">
       <AppNavbar
         title={t("storefront.title")}
         userName={user ? `${user.firstName} ${user.lastName}` : t("navbar.guest")}
+        cartItemCount={cartLines.length}
+        onCartClick={() => {
+          document.getElementById("cart-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }}
         onProfile={() => navigate("/profile")}
         onLogout={handleLogout}
       />
       <div className="grid gap-6 md:grid-cols-2">
         <ProductCatalog canManageCart onAddToCart={handleAddToCart} products={mockProducts} />
-        <CartManager activeCartId={activeCartId} lines={cartLines} onChangeQuantity={handleChangeQuantity} />
+        <section id="cart-panel">
+          <CartManager activeCartId={activeCartId} lines={cartLines} onChangeQuantity={handleChangeQuantity} />
+        </section>
       </div>
     </main>
   );

@@ -14,8 +14,8 @@ export function LoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-6xl flex-col gap-6 p-6">
-      <AppNavbar title={t("login.title")} userName={t("navbar.guest")} />
+    <main className="mx-auto flex min-h-svh w-full max-w-6xl flex-col gap-6 px-6 pb-6 pt-14">
+      <AppNavbar title={t("login.title")} userName={t("navbar.guest")} cartItemCount={0} />
       <section className="flex flex-1 flex-col items-center justify-center gap-6">
         <LoginForm />
         <p className="text-sm text-muted-foreground">

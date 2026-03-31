@@ -10,6 +10,7 @@ export const huHU = {
       language: "Nyelvválasztás",
       logout: "Kijelentkezés",
       guest: "Vendég",
+      cart: "Kosár",
     },
     login: {
       title: "B2B storefront belépés",

@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setSession } from "@/store/authSlice";
 import { useAppDispatch } from "@/store";
+import { useTranslation } from "react-i18next";
 
 export function LoginForm() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [username, setUsername] = useState("buyer.demo");
   const [email, setEmail] = useState("buyer.demo@example.com");
@@ -44,22 +46,22 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>B2B storefront login</CardTitle>
-        <CardDescription>Demo hitelesites a storefront funkciok tesztelesehez.</CardDescription>
+        <CardTitle>{t("login.title")}</CardTitle>
+        <CardDescription>{t("login.description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username">{t("login.username")}</Label>
             <Input id="username" value={username} onChange={(event) => setUsername(event.target.value)} />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("login.email")}</Label>
             <Input id="email" value={email} onChange={(event) => setEmail(event.target.value)} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="firstName">First name</Label>
+              <Label htmlFor="firstName">{t("login.firstName")}</Label>
               <Input
                 id="firstName"
                 value={firstName}
@@ -67,11 +69,11 @@ export function LoginForm() {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="lastName">Last name</Label>
+              <Label htmlFor="lastName">{t("login.lastName")}</Label>
               <Input id="lastName" value={lastName} onChange={(event) => setLastName(event.target.value)} />
             </div>
           </div>
-          <Button type="submit">Belepes</Button>
+          <Button type="submit">{t("login.submit")}</Button>
         </form>
       </CardContent>
     </Card>

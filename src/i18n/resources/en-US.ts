@@ -1,0 +1,47 @@
+export const enUS = {
+  common: {
+    language: {
+      english: "English",
+      hungarian: "Hungarian",
+      switchLabel: "Language",
+    },
+    login: {
+      title: "B2B storefront login",
+      description: "Demo authentication to test storefront flows.",
+      username: "Username",
+      email: "Email",
+      firstName: "First name",
+      lastName: "Last name",
+      submit: "Sign in",
+      browseHintPrefix: "You can still view the catalog without login on",
+      browseHintSuffix: "page.",
+    },
+    browse: {
+      title: "B2B storefront (public browse)",
+      description: "Catalog is public, but cart operations require authenticated session.",
+      loginCtaPrefix: "To manage carts, go to the",
+      loginCtaLink: "login page",
+    },
+    storefront: {
+      title: "B2B storefront",
+      signedInUser: "Signed in user: {{name}}",
+      publicBrowse: "Public browse",
+      logout: "Logout",
+      notAvailable: "n/a",
+    },
+    catalog: {
+      title: "Product catalog",
+      description: "Catalog is public, but cart operations require sign in.",
+      stockAndPrice: "{{stock}} in stock | {{price}} EUR",
+      addToCart: "Add to cart",
+      loginRequired: "Login required",
+    },
+    cart: {
+      title: "Active cart",
+      cartId: "Cart ID: {{id}}",
+      empty: "Your cart is currently empty.",
+      quantityAndPrice: "{{quantity}} pcs x {{price}} EUR",
+      total: "Total: {{total}} EUR",
+    },
+  },
+} as const;

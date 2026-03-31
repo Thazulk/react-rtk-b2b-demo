@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { CartManager, type CartLine } from "@/features/cart/components/cart-manager";
 import { ProductCatalog } from "@/features/catalog/components/product-catalog";
 import { mockProducts } from "@/features/catalog/model/mock-products";
@@ -11,6 +13,7 @@ import type { Product } from "@/types/dummyjson";
 export function StorefrontPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const user = useAppSelector(selectUser);
   const activeCartId = useAppSelector(selectActiveCartId);
@@ -55,17 +58,20 @@ export function StorefrontPage() {
     <main className="mx-auto flex min-h-svh w-full max-w-6xl flex-col gap-6 p-6">
       <header className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4">
         <div className="flex flex-col">
-          <h1 className="text-2xl font-semibold tracking-tight">B2B storefront</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t("storefront.title")}</h1>
           <p className="text-sm text-muted-foreground">
-            Bejelentkezett user: {user ? `${user.firstName} ${user.lastName}` : "n/a"}
+            {t("storefront.signedInUser", {
+              name: user ? `${user.firstName} ${user.lastName}` : t("storefront.notAvailable"),
+            })}
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <LanguageSwitcher />
           <Button variant="outline" onClick={() => navigate("/browse")}>
-            Public browse
+            {t("storefront.publicBrowse")}
           </Button>
           <Button variant="outline" onClick={handleLogout}>
-            Logout
+            {t("storefront.logout")}
           </Button>
         </div>
       </header>

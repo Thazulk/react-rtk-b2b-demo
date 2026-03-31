@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Product } from "@/types/dummyjson";
+import { useTranslation } from "react-i18next";
 
 interface ProductCatalogProps {
   products: Product[];
@@ -9,13 +10,13 @@ interface ProductCatalogProps {
 }
 
 export function ProductCatalog({ products, canManageCart, onAddToCart }: ProductCatalogProps) {
+  const { t } = useTranslation();
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Termekkatalogus</CardTitle>
-        <CardDescription>
-          A katalogus publikus, de kosar muveletekhez bejelentkezes szukseges.
-        </CardDescription>
+        <CardTitle>{t("catalog.title")}</CardTitle>
+        <CardDescription>{t("catalog.description")}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {products.map((product) => (
@@ -24,16 +25,19 @@ export function ProductCatalog({ products, canManageCart, onAddToCart }: Product
               <p className="font-medium">{product.title}</p>
               <p className="text-xs text-muted-foreground">{product.description}</p>
               <p className="text-xs text-muted-foreground">
-                {product.stock} keszlet | {product.price.toFixed(2)} EUR
+                {t("catalog.stockAndPrice", {
+                  stock: String(product.stock),
+                  price: product.price.toFixed(2),
+                })}
               </p>
             </div>
             {canManageCart && onAddToCart ? (
               <Button size="sm" onClick={() => onAddToCart(product)}>
-                Kosarba
+                {t("catalog.addToCart")}
               </Button>
             ) : (
               <Button size="sm" variant="outline" disabled>
-                Login szukseges
+                {t("catalog.loginRequired")}
               </Button>
             )}
           </div>

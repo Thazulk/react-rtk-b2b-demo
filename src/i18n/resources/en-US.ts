@@ -5,6 +5,12 @@ export const enUS = {
       hungarian: "Hungarian",
       switchLabel: "Language",
     },
+    navbar: {
+      profile: "Profile",
+      language: "Language",
+      logout: "Logout",
+      guest: "Guest",
+    },
     login: {
       title: "B2B storefront login",
       description: "Demo authentication to test storefront flows.",
@@ -28,6 +34,13 @@ export const enUS = {
       publicBrowse: "Public browse",
       logout: "Logout",
       notAvailable: "n/a",
+    },
+    profile: {
+      title: "Profile",
+      subtitle: "Signed in B2B account details",
+      name: "Name",
+      email: "Email",
+      username: "Username",
     },
     catalog: {
       title: "Product catalog",

@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { LanguageSwitcher } from "@/components/shared/language-switcher";
+import { AppNavbar } from "@/components/shared/app-navbar";
 import { CartManager, type CartLine } from "@/features/cart/components/cart-manager";
 import { ProductCatalog } from "@/features/catalog/components/product-catalog";
 import { mockProducts } from "@/features/catalog/model/mock-products";
@@ -56,25 +55,12 @@ export function StorefrontPage() {
 
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-6xl flex-col gap-6 p-6">
-      <header className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4">
-        <div className="flex flex-col">
-          <h1 className="text-2xl font-semibold tracking-tight">{t("storefront.title")}</h1>
-          <p className="text-sm text-muted-foreground">
-            {t("storefront.signedInUser", {
-              name: user ? `${user.firstName} ${user.lastName}` : t("storefront.notAvailable"),
-            })}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <LanguageSwitcher />
-          <Button variant="outline" onClick={() => navigate("/browse")}>
-            {t("storefront.publicBrowse")}
-          </Button>
-          <Button variant="outline" onClick={handleLogout}>
-            {t("storefront.logout")}
-          </Button>
-        </div>
-      </header>
+      <AppNavbar
+        title={t("storefront.title")}
+        userName={user ? `${user.firstName} ${user.lastName}` : t("navbar.guest")}
+        onProfile={() => navigate("/profile")}
+        onLogout={handleLogout}
+      />
       <div className="grid gap-6 md:grid-cols-2">
         <ProductCatalog canManageCart onAddToCart={handleAddToCart} products={mockProducts} />
         <CartManager activeCartId={activeCartId} lines={cartLines} onChangeQuantity={handleChangeQuantity} />

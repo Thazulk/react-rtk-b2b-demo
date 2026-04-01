@@ -1,5 +1,8 @@
 export const enUS = {
   common: {
+    app: {
+      name: "B2B Demo",
+    },
     language: {
       english: "English",
       hungarian: "Hungarian",

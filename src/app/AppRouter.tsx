@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
-import { ProtectedLayout } from "@/app/layouts/ProtectedLayout";
+import { ProtectedLayout, RootLayout } from "@/app/layouts";
 import { CartPage } from "@/pages/CartPage";
 import { CatalogPage } from "@/pages/CatalogPage";
 import { DashboardPage } from "@/pages/DashboardPage";
@@ -8,37 +8,42 @@ import { ProfilePage } from "@/pages/ProfilePage";
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <Navigate to="/login" replace />,
-  },
-  {
-    path: "/catalog",
-    element: <CatalogPage />,
-  },
-  {
-    path: "/login",
-    element: <LoginPage />,
-  },
-  {
-    element: <ProtectedLayout />,
+    element: <RootLayout />,
     children: [
       {
-        path: "dashboard",
-        element: <DashboardPage />,
+        index: true,
+        element: <Navigate to="/login" replace />,
       },
       {
-        path: "cart",
-        element: <CartPage />,
+        path: "catalog",
+        element: <CatalogPage />,
       },
       {
-        path: "profile",
-        element: <ProfilePage />,
+        path: "login",
+        element: <LoginPage />,
+      },
+      {
+        element: <ProtectedLayout />,
+        children: [
+          {
+            path: "dashboard",
+            element: <DashboardPage />,
+          },
+          {
+            path: "cart",
+            element: <CartPage />,
+          },
+          {
+            path: "profile",
+            element: <ProfilePage />,
+          },
+        ],
+      },
+      {
+        path: "*",
+        element: <Navigate to="/login" replace />,
       },
     ],
-  },
-  {
-    path: "*",
-    element: <Navigate to="/login" replace />,
   },
 ]);
 

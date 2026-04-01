@@ -1,16 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
-import { AppNavbar } from "@/components/shared/AppNavbar";
 import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
 import { ProductCatalog } from "@/features/catalog/components/ProductCatalog";
-import { persistor, useAppDispatch, useAppSelector } from "@/store";
-import { clearSession, selectActiveCartId, selectUser } from "@/store/authSlice";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { selectActiveCartId, selectUser } from "@/store/authSlice";
 import {
   addOrIncrementDraftLine,
   hydrateUserCartFromApi,
   selectUserDraft,
-  selectUserDraftItemTypesCount,
   setDraftLineQuantity,
 } from "@/store/cartDraftSlice";
 import { useGetProductsQuery, useUpdateCartMutation } from "@/store/dummyJsonApi";
@@ -18,16 +14,13 @@ import { useGetProductsQuery, useUpdateCartMutation } from "@/store/dummyJsonApi
 export function CatalogPage() {
   const pageSize = 12;
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const { t } = useTranslation();
   const [page, setPage] = useState(1);
 
   const user = useAppSelector(selectUser);
   const activeCartId = useAppSelector(selectActiveCartId);
   const draft = useAppSelector((state) => selectUserDraft(state, user?.id));
-  const draftItemTypesCount = useAppSelector((state) => selectUserDraftItemTypesCount(state, user?.id));
   const [updateCart, { isLoading: isUpdatingCart }] = useUpdateCartMutation();
-  const { activeCart, cartItemTypesCount, isBootstrappingCart } = useActiveCart({
+  const { activeCart, isBootstrappingCart } = useActiveCart({
     userId: user?.id,
     activeCartId,
   });
@@ -183,41 +176,22 @@ export function CatalogPage() {
     }
   };
 
-  const handleLogout = () => {
-    dispatch(clearSession());
-    void persistor.purge();
-    navigate("/login", { replace: true });
-  };
-
   return (
-    <main className="min-h-svh w-full lg:pl-56">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 pb-6 pt-14">
-        <AppNavbar
-          title={t("catalog.routeTitle")}
-          userName={user ? `${user.firstName} ${user.lastName}` : t("navbar.guest")}
-          cartItemCount={draftItemTypesCount || cartItemTypesCount}
-          onTitleClick={() => navigate("/")}
-          onCartClick={user ? () => navigate("/cart") : undefined}
-          onProfile={user ? () => navigate("/profile") : undefined}
-          onLogout={user ? handleLogout : undefined}
-          onLogin={!user ? () => navigate("/login") : undefined}
-        />
-
-        <ProductCatalog
-          canManageCart={Boolean(user)}
-          isLoading={isProductsLoading || isBootstrappingCart || isUpdatingCart}
-          currentPage={page}
-          totalPages={totalPages}
-          onPrevPage={page > 1 ? () => setPage((prev) => prev - 1) : undefined}
-          onNextPage={page < totalPages ? () => setPage((prev) => prev + 1) : undefined}
-          products={productsData?.products ?? []}
-          cartQuantities={user ? cartQuantities : undefined}
-          onChangeCartQuantity={
-            user ? (productId, next) => void handleChangeLineQuantity(productId, next) : undefined
-          }
-          onAddToCart={(product) => void handleAddToCart(product.id)}
-        />
-      </div>
-    </main>
+    <div className="flex h-full max-h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
+      <ProductCatalog
+        canManageCart={Boolean(user)}
+        isLoading={isProductsLoading || isBootstrappingCart || isUpdatingCart}
+        currentPage={page}
+        totalPages={totalPages}
+        onPrevPage={page > 1 ? () => setPage((prev) => prev - 1) : undefined}
+        onNextPage={page < totalPages ? () => setPage((prev) => prev + 1) : undefined}
+        products={productsData?.products ?? []}
+        cartQuantities={user ? cartQuantities : undefined}
+        onChangeCartQuantity={
+          user ? (productId, next) => void handleChangeLineQuantity(productId, next) : undefined
+        }
+        onAddToCart={(product) => void handleAddToCart(product.id)}
+      />
+    </div>
   );
 }

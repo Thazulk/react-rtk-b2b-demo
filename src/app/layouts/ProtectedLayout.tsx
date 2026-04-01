@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Navigate, Outlet } from "react-router";
-import { NavigationDrawer } from "@/components/shared/NavigationDrawer";
 import {
   clearSession,
   selectAccessToken,
@@ -12,6 +11,7 @@ import {
 import { useGetAuthMeQuery } from "@/store/dummyJsonApi";
 import { persistor, useAppDispatch, useAppSelector } from "@/store";
 
+/** Route guard: session + `/auth/me` validation. UI shell lives in `RootLayout`. */
 export function ProtectedLayout() {
   const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
@@ -54,10 +54,5 @@ export function ProtectedLayout() {
     return null;
   }
 
-  return (
-    <>
-      <NavigationDrawer />
-      <Outlet />
-    </>
-  );
+  return <Outlet />;
 }

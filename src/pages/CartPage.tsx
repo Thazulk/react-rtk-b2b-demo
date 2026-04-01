@@ -1,29 +1,22 @@
 import { useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
-import { AppNavbar } from "@/components/shared/AppNavbar";
 import { CartManager } from "@/features/cart/components/CartManager";
 import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
-import { persistor, useAppDispatch, useAppSelector } from "@/store";
-import { clearSession, selectActiveCartId, selectUser } from "@/store/authSlice";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { selectActiveCartId, selectUser } from "@/store/authSlice";
 import {
   hydrateUserCartFromApi,
   selectUserDraft,
-  selectUserDraftItemTypesCount,
   setDraftLineQuantity,
 } from "@/store/cartDraftSlice";
 import { useUpdateCartMutation } from "@/store/dummyJsonApi";
 
 export function CartPage() {
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const { t } = useTranslation();
 
   const user = useAppSelector(selectUser);
   const activeCartId = useAppSelector(selectActiveCartId);
   const draft = useAppSelector((state) => selectUserDraft(state, user?.id));
-  const draftItemTypesCount = useAppSelector((state) => selectUserDraftItemTypesCount(state, user?.id));
-  const { activeCart, cartItemTypesCount } = useActiveCart({
+  const { activeCart } = useActiveCart({
     userId: user?.id,
     activeCartId,
   });
@@ -109,31 +102,13 @@ export function CartPage() {
     }
   };
 
-  const handleLogout = () => {
-    dispatch(clearSession());
-    void persistor.purge();
-    navigate("/login", { replace: true });
-  };
-
   return (
-    <main className="min-h-svh w-full lg:pl-56">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 pb-6 pt-14">
-        <AppNavbar
-          title={t("cart.routeTitle")}
-          userName={user ? `${user.firstName} ${user.lastName}` : t("navbar.guest")}
-          cartItemCount={draftItemTypesCount || cartItemTypesCount}
-          onTitleClick={() => navigate("/")}
-          onCartClick={() => navigate("/cart")}
-          onProfile={() => navigate("/profile")}
-          onLogout={handleLogout}
-        />
-
-        <CartManager
-          activeCartId={activeCartId}
-          lines={cartLines}
-          onChangeQuantity={(productId, nextQuantity) => void handleChangeQuantity(productId, nextQuantity)}
-        />
-      </div>
-    </main>
+    <div className="flex min-h-0 w-full flex-1 flex-col">
+      <CartManager
+      activeCartId={activeCartId}
+      lines={cartLines}
+      onChangeQuantity={(productId, nextQuantity) => void handleChangeQuantity(productId, nextQuantity)}
+    />
+    </div>
   );
 }

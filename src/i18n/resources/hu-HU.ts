@@ -1,5 +1,8 @@
 export const huHU = {
   common: {
+    app: {
+      name: "B2B Demo",
+    },
     language: {
       english: "Angol",
       hungarian: "Magyar",

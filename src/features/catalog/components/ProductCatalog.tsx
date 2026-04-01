@@ -33,57 +33,61 @@ export function ProductCatalog({
   const { t } = useTranslation();
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="flex min-h-0 w-full min-w-0 max-w-full flex-1 flex-col overflow-hidden max-h-[calc(100svh-6.5rem)]">
+      <CardHeader className="shrink-0">
         <CardTitle>{t("catalog.title")}</CardTitle>
         <CardDescription>{t("catalog.description")}</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {isLoading ? <p className="text-sm text-muted-foreground">{t("catalog.loading")}</p> : null}
-        {products.map((product) => {
-          const inCartQty = cartQuantities?.[product.id] ?? 0;
+      <CardContent className="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden p-0">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-2">
+          <div className="flex flex-col gap-3">
+            {isLoading ? <p className="text-sm text-muted-foreground">{t("catalog.loading")}</p> : null}
+            {products.map((product) => {
+              const inCartQty = cartQuantities?.[product.id] ?? 0;
 
-          return (
-            <div key={product.id} className="flex items-center justify-between gap-3 rounded-lg border p-3">
-              <div className="flex items-center gap-3">
-                <img
-                  src={product.thumbnail}
-                  alt={product.title}
-                  className="size-14 rounded-md border object-cover"
-                  loading="lazy"
-                />
-                <div className="flex flex-col gap-1">
-                  <p className="font-medium">{product.title}</p>
-                  <p className="text-xs text-muted-foreground">{product.description}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t("catalog.stockAndPrice", {
-                      stock: String(product.stock),
-                      price: product.price.toFixed(2),
-                    })}
-                  </p>
+              return (
+                <div key={product.id} className="flex items-center justify-between gap-3 rounded-lg border p-3">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={product.thumbnail}
+                      alt={product.title}
+                      className="size-14 rounded-md border object-cover"
+                      loading="lazy"
+                    />
+                    <div className="flex flex-col gap-1">
+                      <p className="font-medium">{product.title}</p>
+                      <p className="text-xs text-muted-foreground">{product.description}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("catalog.stockAndPrice", {
+                          stock: String(product.stock),
+                          price: product.price.toFixed(2),
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  {canManageCart && inCartQty > 0 && onChangeCartQuantity ? (
+                    <CartLineQuantityControls
+                      quantity={inCartQty}
+                      disabled={isLoading}
+                      onDecrement={() => onChangeCartQuantity(product.id, inCartQty - 1)}
+                      onIncrement={() => onChangeCartQuantity(product.id, inCartQty + 1)}
+                      onRemove={() => onChangeCartQuantity(product.id, 0)}
+                    />
+                  ) : canManageCart && onAddToCart ? (
+                    <Button size="sm" disabled={isLoading} onClick={() => onAddToCart(product)}>
+                      {t("catalog.addToCart")}
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="outline" disabled>
+                      {t("catalog.loginRequired")}
+                    </Button>
+                  )}
                 </div>
-              </div>
-              {canManageCart && inCartQty > 0 && onChangeCartQuantity ? (
-                <CartLineQuantityControls
-                  quantity={inCartQty}
-                  disabled={isLoading}
-                  onDecrement={() => onChangeCartQuantity(product.id, inCartQty - 1)}
-                  onIncrement={() => onChangeCartQuantity(product.id, inCartQty + 1)}
-                  onRemove={() => onChangeCartQuantity(product.id, 0)}
-                />
-              ) : canManageCart && onAddToCart ? (
-                <Button size="sm" disabled={isLoading} onClick={() => onAddToCart(product)}>
-                  {t("catalog.addToCart")}
-                </Button>
-              ) : (
-                <Button size="sm" variant="outline" disabled>
-                  {t("catalog.loginRequired")}
-                </Button>
-              )}
-            </div>
-          );
-        })}
-        <div className="flex items-center justify-between border-t pt-3">
+              );
+            })}
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center justify-between border-t px-4 py-3">
           <p className="text-xs text-muted-foreground">
             {t("catalog.pagination", { current: String(currentPage), total: String(totalPages) })}
           </p>

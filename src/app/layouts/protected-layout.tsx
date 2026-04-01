@@ -1,4 +1,5 @@
 import { Navigate, Outlet } from "react-router";
+import { NavigationDrawer } from "@/components/shared/navigation-drawer";
 import { selectIsAuthenticated } from "@/store/authSlice";
 import { useAppSelector } from "@/store";
 
@@ -9,5 +10,10 @@ export function ProtectedLayout() {
     return <Navigate to="/login" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <>
+      <NavigationDrawer />
+      <Outlet />
+    </>
+  );
 }

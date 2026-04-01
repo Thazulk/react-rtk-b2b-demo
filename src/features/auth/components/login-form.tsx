@@ -9,29 +9,20 @@ import { useLoginMutation } from "@/store/dummyJsonApi";
 import { useAppDispatch } from "@/store";
 import { useTranslation } from "react-i18next";
 
-const DUMMY_CREDENTIALS = {
-  email: "emily.johnson@x.dummyjson.com",
-  password: "emilyspass",
-  username: "emilys",
-};
-
 export function LoginForm() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [login, { isLoading }] = useLoginMutation();
 
-  const [email, setEmail] = useState(DUMMY_CREDENTIALS.email);
-  const [password, setPassword] = useState(DUMMY_CREDENTIALS.password);
+  const [username, setUsername] = useState("emilys");
+  const [password, setPassword] = useState("emilyspass");
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const isValidCredentials =
-      email.trim().toLowerCase() === DUMMY_CREDENTIALS.email && password === DUMMY_CREDENTIALS.password;
-
-    if (!isValidCredentials) {
+    if (!username.trim() || !password.trim()) {
       setError(t("login.invalidCredentials"));
       return;
     }
@@ -39,7 +30,7 @@ export function LoginForm() {
     try {
       setError(null);
       const response = await login({
-        username: DUMMY_CREDENTIALS.username,
+        username: username.trim(),
         password,
         expiresInMins: 30,
       }).unwrap();
@@ -60,7 +51,7 @@ export function LoginForm() {
         }),
       );
 
-      navigate("/catalog", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch {
       setError(t("login.requestFailed"));
     }
@@ -75,12 +66,12 @@ export function LoginForm() {
       <CardContent>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="email">{t("login.email")}</Label>
+            <Label htmlFor="username">{t("login.username")}</Label>
             <Input
-              id="email"
-              autoComplete="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              id="username"
+              autoComplete="username"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -94,10 +85,7 @@ export function LoginForm() {
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            {t("login.demoCredentials", {
-              email: DUMMY_CREDENTIALS.email,
-              password: DUMMY_CREDENTIALS.password,
-            })}
+            {t("login.credentialsHint")}
           </p>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <Button type="submit" disabled={isLoading}>

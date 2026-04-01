@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import { ProtectedLayout } from "@/app/layouts/protected-layout";
 import { CartPage } from "@/pages/cart-page";
 import { CatalogPage } from "@/pages/catalog-page";
+import { DashboardPage } from "@/pages/dashboard-page";
 import { LoginPage } from "@/pages/login-page";
 import { ProfilePage } from "@/pages/profile-page";
 
@@ -16,7 +17,11 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/catalog" replace />,
+        element: <Navigate to="/dashboard" replace />,
+      },
+      {
+        path: "dashboard",
+        element: <DashboardPage />,
       },
       {
         path: "catalog",

@@ -111,6 +111,7 @@ export function CatalogPage() {
       try {
         await updateCart({
           cartId: activeCartId,
+          userId: user.id,
           body: {
             merge: true,
             products: nextLines.map((line) => ({
@@ -118,6 +119,13 @@ export function CatalogPage() {
               quantity: line.quantity,
             })),
           },
+          optimisticProducts: nextLines.map((line) => ({
+            id: line.id,
+            title: line.title,
+            price: line.price,
+            discountPercentage: line.discountPercentage,
+            thumbnail: line.thumbnail,
+          })),
         }).unwrap();
       } catch {
         /* keep draft; API may not persist */
@@ -166,10 +174,18 @@ export function CatalogPage() {
     try {
       await updateCart({
         cartId: activeCartId,
+        userId: user.id,
         body: {
           merge: true,
           products: nextProducts,
         },
+        optimisticProducts: sourceLines.map((line) => ({
+          id: line.id,
+          title: line.title,
+          price: line.price,
+          discountPercentage: line.discountPercentage,
+          thumbnail: line.thumbnail,
+        })),
       }).unwrap();
     } catch {
       /* keep draft */

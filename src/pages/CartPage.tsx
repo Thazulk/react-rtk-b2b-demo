@@ -92,10 +92,18 @@ export function CartPage() {
     try {
       await updateCart({
         cartId: activeCartId,
+        userId: user.id,
         body: {
           merge: true,
           products: nextProducts,
         },
+        optimisticProducts: sourceLines.map((line) => ({
+          id: line.id,
+          title: line.title,
+          price: line.price,
+          discountPercentage: line.discountPercentage,
+          thumbnail: line.thumbnail,
+        })),
       }).unwrap();
     } catch {
       /* Draft is already updated; DummyJSON may not persist — keep local state. */

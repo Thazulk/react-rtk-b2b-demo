@@ -25,9 +25,14 @@ const storage =
     ? createNoopStorage()
     : createWebStorage("local");
 
+const authStorage =
+  typeof window === "undefined"
+    ? createNoopStorage()
+    : createWebStorage("session");
+
 const authPersistConfig = {
   key: "auth",
-  storage,
+  storage: authStorage,
   whitelist: ["accessToken", "user", "activeCartId"],
 };
 

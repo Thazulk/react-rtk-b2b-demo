@@ -1,4 +1,6 @@
 import type { AuthState } from "@/store/authSlice";
+import { clearSession } from "@/store/authSlice";
+import type { RootState } from "@/store/store";
 import type {
   AddCartRequest,
   Cart,
@@ -6,29 +8,62 @@ import type {
   CartProduct,
   LoginRequest,
   LoginResponse,
-  Product,
   ProductListResponse,
   UpdateCartRequest,
   User,
 } from "@/types/dummyjson";
+import type {
+  BaseQueryFn,
+  FetchArgs,
+  FetchBaseQueryError,
+} from "@reduxjs/toolkit/query";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 type HeaderState = {
   auth: Pick<AuthState, "accessToken">;
 };
 
+interface OptimisticProductMeta {
+  id: number;
+  title: string;
+  price: number;
+  discountPercentage: number;
+  thumbnail: string;
+}
+
+interface UpdateCartMutationArgs {
+  cartId: number;
+  body: UpdateCartRequest;
+  userId?: number;
+  optimisticProducts?: OptimisticProductMeta[];
+}
+
+const rawBaseQuery = fetchBaseQuery({
+  baseUrl: "https://dummyjson.com",
+  prepareHeaders: (headers, { getState }) => {
+    const token = (getState() as HeaderState).auth.accessToken;
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+    return headers;
+  },
+});
+
+const baseQueryWithAuthHandling: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  const result = await rawBaseQuery(args, api, extraOptions);
+  if (result.error?.status === 401) {
+    api.dispatch(clearSession());
+  }
+  return result;
+};
+
 export const dummyJsonApi = createApi({
   reducerPath: "dummyJsonApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: "https://dummyjson.com",
-    prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as HeaderState).auth.accessToken;
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithAuthHandling,
   tagTypes: ["Products", "Cart", "CartsByUser"],
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginRequest>({
@@ -71,20 +106,17 @@ export const dummyJsonApi = createApi({
         { type: "CartsByUser", id: arg.userId },
       ],
     }),
-    updateCart: builder.mutation<
-      Cart,
-      { cartId: number; body: UpdateCartRequest }
-    >({
+    updateCart: builder.mutation<Cart, UpdateCartMutationArgs>({
       query: ({ cartId, body }) => ({
         url: `/carts/${cartId}`,
         method: "PUT",
         body,
       }),
       async onQueryStarted(
-        { cartId, body },
+        { cartId, body, optimisticProducts = [] },
         { dispatch, getState, queryFulfilled },
       ) {
-        const state = getState() as any;
+        const state = getState() as RootState;
 
         const currentCart =
           dummyJsonApi.endpoints.getCartById.select(cartId)(state).data;
@@ -93,24 +125,9 @@ export const dummyJsonApi = createApi({
           return;
         }
 
-        const productMetaById = new Map<number, Product>();
-        const queries = Object.values(
-          (state[dummyJsonApi.reducerPath]?.queries ?? {}) as Record<
-            string,
-            {
-              endpointName?: string;
-              data?: unknown;
-            }
-          >,
-        );
-        for (const queryState of queries) {
-          if (queryState.endpointName !== "getProducts") {
-            continue;
-          }
-          const data = queryState.data as ProductListResponse | undefined;
-          for (const product of data?.products ?? []) {
-            productMetaById.set(product.id, product);
-          }
+        const productMetaById = new Map<number, OptimisticProductMeta>();
+        for (const product of optimisticProducts) {
+          productMetaById.set(product.id, product);
         }
 
         const quantities = new Map<number, number>();
@@ -123,7 +140,7 @@ export const dummyJsonApi = createApi({
           quantities.set(product.id, product.quantity);
         }
 
-        const optimisticProducts: CartProduct[] = [];
+        const optimisticCartProducts: CartProduct[] = [];
         for (const [productId, quantity] of quantities) {
           if (quantity <= 0) {
             continue;
@@ -140,7 +157,7 @@ export const dummyJsonApi = createApi({
             (total * (1 - discountPercentage / 100)).toFixed(2),
           );
 
-          optimisticProducts.push({
+          optimisticCartProducts.push({
             id: productId,
             title: existing?.title ?? meta?.title ?? `Product #${productId}`,
             price,
@@ -153,26 +170,26 @@ export const dummyJsonApi = createApi({
         }
 
         const total = Number(
-          optimisticProducts
+          optimisticCartProducts
             .reduce((sum, item) => sum + item.total, 0)
             .toFixed(2),
         );
         const discountedTotal = Number(
-          optimisticProducts
+          optimisticCartProducts
             .reduce((sum, item) => sum + item.discountedTotal, 0)
             .toFixed(2),
         );
-        const totalQuantity = optimisticProducts.reduce(
+        const totalQuantity = optimisticCartProducts.reduce(
           (sum, item) => sum + item.quantity,
           0,
         );
 
         const patchResult = dispatch(
           dummyJsonApi.util.updateQueryData("getCartById", cartId, (draft) => {
-            draft.products = optimisticProducts;
+            draft.products = optimisticCartProducts;
             draft.total = total;
             draft.discountedTotal = discountedTotal;
-            draft.totalProducts = optimisticProducts.length;
+            draft.totalProducts = optimisticCartProducts.length;
             draft.totalQuantity = totalQuantity;
           }),
         );
@@ -188,6 +205,7 @@ export const dummyJsonApi = createApi({
       },
       invalidatesTags: (_result, _error, arg) => [
         { type: "Cart", id: arg.cartId },
+        ...(arg.userId ? [{ type: "CartsByUser" as const, id: arg.userId }] : []),
       ],
     }),
   }),

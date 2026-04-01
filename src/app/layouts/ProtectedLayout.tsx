@@ -18,7 +18,7 @@ export function ProtectedLayout() {
   const accessToken = useAppSelector(selectAccessToken);
   const activeCartId = useAppSelector(selectActiveCartId);
   const user = useAppSelector(selectUser);
-  const { data: authMe, isFetching, isError } = useGetAuthMeQuery(undefined, {
+  const { data: authMe, error, isFetching, isError } = useGetAuthMeQuery(undefined, {
     skip: !accessToken,
   });
 
@@ -39,12 +39,17 @@ export function ProtectedLayout() {
   }, [accessToken, activeCartId, authMe, dispatch, user]);
 
   useEffect(() => {
-    if (!accessToken || !isError) {
+    const status =
+      typeof error === "object" && error !== null && "status" in error
+        ? error.status
+        : undefined;
+
+    if (!accessToken || !isError || status !== 401) {
       return;
     }
     dispatch(clearSession());
     void persistor.purge();
-  }, [accessToken, dispatch, isError]);
+  }, [accessToken, dispatch, error, isError]);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

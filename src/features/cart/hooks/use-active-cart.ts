@@ -1,7 +1,10 @@
-import { useEffect } from "react";
 import { useAppDispatch } from "@/store";
 import { setActiveCartId } from "@/store/authSlice";
-import { useGetCartByIdQuery, useGetCartsByUserQuery } from "@/store/dummyJsonApi";
+import {
+  useGetCartByIdQuery,
+  useGetCartsByUserQuery,
+} from "@/store/dummyJsonApi";
+import { useEffect } from "react";
 
 interface UseActiveCartParams {
   userId?: number;
@@ -11,9 +14,10 @@ interface UseActiveCartParams {
 export function useActiveCart({ userId, activeCartId }: UseActiveCartParams) {
   const dispatch = useAppDispatch();
 
-  const { data: userCarts, isFetching: isCartsFetching } = useGetCartsByUserQuery(userId ?? 0, {
-    skip: !userId,
-  });
+  const { data: userCarts, isFetching: isCartsFetching } =
+    useGetCartsByUserQuery(userId ?? 0, {
+      skip: !userId,
+    });
 
   const {
     data: activeCart,

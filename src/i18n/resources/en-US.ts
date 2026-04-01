@@ -9,6 +9,7 @@ export const enUS = {
       profile: "Profile",
       language: "Language",
       logout: "Logout",
+      login: "Login",
       guest: "Guest",
       cart: "Cart",
     },
@@ -28,6 +29,7 @@ export const enUS = {
       requestFailed: "Login request failed. Please try again.",
       loading: "Signing in...",
       submit: "Sign in",
+      continueAsGuest: "Continue as guest",
     },
     storefront: {
       notAvailable: "n/a",

@@ -12,6 +12,7 @@ interface AppNavbarProps {
   onCartClick?: () => void;
   onProfile?: () => void;
   onLogout?: () => void;
+  onLogin?: () => void;
 }
 
 export function AppNavbar({
@@ -22,6 +23,7 @@ export function AppNavbar({
   onCartClick,
   onProfile,
   onLogout,
+  onLogin,
 }: AppNavbarProps) {
   const { i18n, t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -84,17 +86,18 @@ export function AppNavbar({
 
             {isMenuOpen ? (
               <div className="absolute right-0 z-10 mt-2 flex w-64 flex-col gap-2 rounded-lg border bg-background p-2 shadow-lg">
-                <Button
-                  variant="ghost"
-                  className="justify-start"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    onProfile?.();
-                  }}
-                  disabled={!onProfile}
-                >
-                  {t("navbar.profile")}
-                </Button>
+                {onProfile ? (
+                  <Button
+                    variant="ghost"
+                    className="justify-start"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onProfile();
+                    }}
+                  >
+                    {t("navbar.profile")}
+                  </Button>
+                ) : null}
 
                 <div className="rounded-md border p-2">
                   <p className="mb-2 text-xs text-muted-foreground">{t("navbar.language")}</p>
@@ -116,17 +119,30 @@ export function AppNavbar({
                   </div>
                 </div>
 
-                <Button
-                  variant="ghost"
-                  className="justify-start text-destructive hover:text-destructive"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    onLogout?.();
-                  }}
-                  disabled={!onLogout}
-                >
-                  {t("navbar.logout")}
-                </Button>
+                {onLogout ? (
+                  <Button
+                    variant="ghost"
+                    className="justify-start text-destructive hover:text-destructive"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onLogout();
+                    }}
+                  >
+                    {t("navbar.logout")}
+                  </Button>
+                ) : null}
+                {!onLogout && onLogin ? (
+                  <Button
+                    variant="ghost"
+                    className="justify-start"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onLogin();
+                    }}
+                  >
+                    {t("navbar.login")}
+                  </Button>
+                ) : null}
               </div>
             ) : null}
           </div>

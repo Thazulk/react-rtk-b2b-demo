@@ -9,7 +9,7 @@ import { ProfilePage } from "@/pages/profile-page";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/catalog" replace />,
+    element: <Navigate to="/login" replace />,
   },
   {
     path: "/catalog",
@@ -38,7 +38,7 @@ const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: <Navigate to="/catalog" replace />,
+    element: <Navigate to="/login" replace />,
   },
 ]);
 

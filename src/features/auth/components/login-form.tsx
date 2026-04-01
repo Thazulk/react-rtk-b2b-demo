@@ -51,7 +51,7 @@ export function LoginForm() {
         }),
       );
 
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch {
       setError(t("login.requestFailed"));
     }

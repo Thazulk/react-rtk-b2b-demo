@@ -1,7 +1,7 @@
-import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
 import { enUS } from "@/i18n/resources/en-US";
 import { huHU } from "@/i18n/resources/hu-HU";
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
 
 export const defaultNS = "common";
 

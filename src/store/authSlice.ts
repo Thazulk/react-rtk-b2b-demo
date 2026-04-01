@@ -1,6 +1,6 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { User } from "@/types/dummyjson";
 import type { RootState } from "@/store/store";
+import type { User } from "@/types/dummyjson";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 export interface AuthState {
   accessToken: string | null;

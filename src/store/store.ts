@@ -1,3 +1,6 @@
+import { authReducer } from "@/store/authSlice";
+import { cartDraftReducer } from "@/store/cartDraftSlice";
+import { dummyJsonApi } from "@/store/dummyJsonApi";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import {
   FLUSH,
@@ -10,9 +13,6 @@ import {
   persistStore,
 } from "redux-persist";
 import createWebStorage from "redux-persist/es/storage/createWebStorage";
-import { authReducer } from "@/store/authSlice";
-import { cartDraftReducer } from "@/store/cartDraftSlice";
-import { dummyJsonApi } from "@/store/dummyJsonApi";
 
 const createNoopStorage = () => ({
   getItem: (_key: string) => Promise.resolve(null),
@@ -21,7 +21,9 @@ const createNoopStorage = () => ({
 });
 
 const storage =
-  typeof window === "undefined" ? createNoopStorage() : createWebStorage("local");
+  typeof window === "undefined"
+    ? createNoopStorage()
+    : createWebStorage("local");
 
 const authPersistConfig = {
   key: "auth",

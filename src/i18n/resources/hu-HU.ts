@@ -9,6 +9,7 @@ export const huHU = {
       profile: "Profil",
       language: "Nyelvválasztás",
       logout: "Kijelentkezés",
+      login: "Bejelentkezés",
       guest: "Vendég",
       cart: "Kosár",
     },
@@ -28,6 +29,7 @@ export const huHU = {
       requestFailed: "A bejelentkezési kérés sikertelen. Próbáld újra.",
       loading: "Belépés...",
       submit: "Belépés",
+      continueAsGuest: "Folytatás vendég módban",
     },
     storefront: {
       notAvailable: "n/a",
@@ -51,7 +53,8 @@ export const huHU = {
     catalog: {
       routeTitle: "Katalógus",
       title: "Termékkatalógus",
-      description: "A katalógus publikus, de kosár műveletekhez bejelentkezés szükséges.",
+      description:
+        "A katalógus publikus, de kosár műveletekhez bejelentkezés szükséges.",
       loading: "Termékek betöltése...",
       stockAndPrice: "{{stock}} készlet | {{price}} EUR",
       addToCart: "Kosárba",

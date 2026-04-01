@@ -1,10 +1,9 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { AuthState } from "@/store/authSlice";
 import type {
   AddCartRequest,
   Cart,
-  CartProduct,
   CartListResponse,
+  CartProduct,
   LoginRequest,
   LoginResponse,
   Product,
@@ -12,6 +11,7 @@ import type {
   UpdateCartRequest,
   User,
 } from "@/types/dummyjson";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 type HeaderState = {
   auth: Pick<AuthState, "accessToken">;
@@ -41,7 +41,10 @@ export const dummyJsonApi = createApi({
     getAuthMe: builder.query<User, void>({
       query: () => "/auth/me",
     }),
-    getProducts: builder.query<ProductListResponse, { limit?: number; skip?: number } | void>({
+    getProducts: builder.query<
+      ProductListResponse,
+      { limit?: number; skip?: number } | void
+    >({
       query: (params) => ({
         url: "/products",
         params: params ?? {},
@@ -50,7 +53,9 @@ export const dummyJsonApi = createApi({
     }),
     getCartsByUser: builder.query<CartListResponse, number>({
       query: (userId) => `/carts/user/${userId}`,
-      providesTags: (_result, _error, userId) => [{ type: "CartsByUser", id: userId }],
+      providesTags: (_result, _error, userId) => [
+        { type: "CartsByUser", id: userId },
+      ],
     }),
     getCartById: builder.query<Cart, number>({
       query: (cartId) => `/carts/${cartId}`,
@@ -62,18 +67,27 @@ export const dummyJsonApi = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: (_result, _error, arg) => [{ type: "CartsByUser", id: arg.userId }],
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "CartsByUser", id: arg.userId },
+      ],
     }),
-    updateCart: builder.mutation<Cart, { cartId: number; body: UpdateCartRequest }>({
+    updateCart: builder.mutation<
+      Cart,
+      { cartId: number; body: UpdateCartRequest }
+    >({
       query: ({ cartId, body }) => ({
         url: `/carts/${cartId}`,
         method: "PUT",
         body,
       }),
-      async onQueryStarted({ cartId, body }, { dispatch, getState, queryFulfilled }) {
+      async onQueryStarted(
+        { cartId, body },
+        { dispatch, getState, queryFulfilled },
+      ) {
         const state = getState() as any;
 
-        const currentCart = dummyJsonApi.endpoints.getCartById.select(cartId)(state).data;
+        const currentCart =
+          dummyJsonApi.endpoints.getCartById.select(cartId)(state).data;
         if (!currentCart) {
           await queryFulfilled.catch(() => undefined);
           return;
@@ -114,12 +128,17 @@ export const dummyJsonApi = createApi({
           if (quantity <= 0) {
             continue;
           }
-          const existing = currentCart.products.find((item) => item.id === productId);
+          const existing = currentCart.products.find(
+            (item) => item.id === productId,
+          );
           const meta = productMetaById.get(productId);
           const price = existing?.price ?? meta?.price ?? 0;
-          const discountPercentage = existing?.discountPercentage ?? meta?.discountPercentage ?? 0;
+          const discountPercentage =
+            existing?.discountPercentage ?? meta?.discountPercentage ?? 0;
           const total = Number((price * quantity).toFixed(2));
-          const discountedTotal = Number((total * (1 - discountPercentage / 100)).toFixed(2));
+          const discountedTotal = Number(
+            (total * (1 - discountPercentage / 100)).toFixed(2),
+          );
 
           optimisticProducts.push({
             id: productId,
@@ -133,11 +152,20 @@ export const dummyJsonApi = createApi({
           });
         }
 
-        const total = Number(optimisticProducts.reduce((sum, item) => sum + item.total, 0).toFixed(2));
-        const discountedTotal = Number(
-          optimisticProducts.reduce((sum, item) => sum + item.discountedTotal, 0).toFixed(2),
+        const total = Number(
+          optimisticProducts
+            .reduce((sum, item) => sum + item.total, 0)
+            .toFixed(2),
         );
-        const totalQuantity = optimisticProducts.reduce((sum, item) => sum + item.quantity, 0);
+        const discountedTotal = Number(
+          optimisticProducts
+            .reduce((sum, item) => sum + item.discountedTotal, 0)
+            .toFixed(2),
+        );
+        const totalQuantity = optimisticProducts.reduce(
+          (sum, item) => sum + item.quantity,
+          0,
+        );
 
         const patchResult = dispatch(
           dummyJsonApi.util.updateQueryData("getCartById", cartId, (draft) => {
@@ -151,12 +179,16 @@ export const dummyJsonApi = createApi({
 
         try {
           const { data } = await queryFulfilled;
-          dispatch(dummyJsonApi.util.upsertQueryData("getCartById", cartId, data));
+          dispatch(
+            dummyJsonApi.util.upsertQueryData("getCartById", cartId, data),
+          );
         } catch {
           patchResult.undo();
         }
       },
-      invalidatesTags: (_result, _error, arg) => [{ type: "Cart", id: arg.cartId }],
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "Cart", id: arg.cartId },
+      ],
     }),
   }),
 });

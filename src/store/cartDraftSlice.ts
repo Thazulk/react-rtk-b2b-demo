@@ -1,6 +1,6 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/store/store";
 import type { CartProduct } from "@/types/dummyjson";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 export interface CartDraftLine {
   id: number;
@@ -81,7 +81,9 @@ const cartDraftSlice = createSlice({
     ) => {
       const userKey = String(action.payload.userId);
       const current = state.byUserId[userKey] ?? { cartId: null, lines: [] };
-      const line = current.lines.find((entry) => entry.id === action.payload.product.id);
+      const line = current.lines.find(
+        (entry) => entry.id === action.payload.product.id,
+      );
 
       if (!line) {
         current.lines.push({
@@ -110,7 +112,9 @@ const cartDraftSlice = createSlice({
       const current = state.byUserId[userKey] ?? { cartId: null, lines: [] };
       current.lines = current.lines
         .map((line) =>
-          line.id === action.payload.productId ? { ...line, quantity: action.payload.quantity } : line,
+          line.id === action.payload.productId
+            ? { ...line, quantity: action.payload.quantity }
+            : line,
         )
         .filter((line) => line.quantity > 0);
       state.byUserId[userKey] = current;
@@ -132,13 +136,19 @@ export const {
 
 export const cartDraftReducer = cartDraftSlice.reducer;
 
-export const selectUserDraft = (state: RootState, userId?: number | null): UserCartDraft | null => {
+export const selectUserDraft = (
+  state: RootState,
+  userId?: number | null,
+): UserCartDraft | null => {
   if (!userId) {
     return null;
   }
   return state.cartDraft.byUserId[String(userId)] ?? null;
 };
 
-export const selectUserDraftItemTypesCount = (state: RootState, userId?: number | null): number => {
+export const selectUserDraftItemTypesCount = (
+  state: RootState,
+  userId?: number | null,
+): number => {
   return selectUserDraft(state, userId)?.lines.length ?? 0;
 };

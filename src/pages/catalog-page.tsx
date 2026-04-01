@@ -127,6 +127,7 @@ export function CatalogPage() {
           onCartClick={user ? () => navigate("/cart") : undefined}
           onProfile={user ? () => navigate("/profile") : undefined}
           onLogout={user ? handleLogout : undefined}
+          onLogin={!user ? () => navigate("/login") : undefined}
         />
 
         <ProductCatalog

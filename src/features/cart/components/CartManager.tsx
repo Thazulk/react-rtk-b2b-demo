@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CartLineQuantityControls } from "@/features/cart/components/CartLineQuantityControls";
 
 export interface CartLineView {
   product: {
@@ -42,23 +42,12 @@ export function CartManager({ activeCartId, lines, onChangeQuantity }: CartManag
                   })}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  size="icon-sm"
-                  variant="outline"
-                  onClick={() => onChangeQuantity(line.product.id, line.quantity - 1)}
-                >
-                  -
-                </Button>
-                <span className="w-7 text-center text-sm">{line.quantity}</span>
-                <Button
-                  size="icon-sm"
-                  variant="outline"
-                  onClick={() => onChangeQuantity(line.product.id, line.quantity + 1)}
-                >
-                  +
-                </Button>
-              </div>
+              <CartLineQuantityControls
+                quantity={line.quantity}
+                onDecrement={() => onChangeQuantity(line.product.id, line.quantity - 1)}
+                onIncrement={() => onChangeQuantity(line.product.id, line.quantity + 1)}
+                onRemove={() => onChangeQuantity(line.product.id, 0)}
+              />
             </div>
           ))
         )}

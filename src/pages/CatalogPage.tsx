@@ -11,6 +11,7 @@ import {
   hydrateUserCartFromApi,
   selectUserDraft,
   selectUserDraftItemTypesCount,
+  setDraftLineQuantity,
 } from "@/store/cartDraftSlice";
 import { useGetProductsQuery, useUpdateCartMutation } from "@/store/dummyJsonApi";
 
@@ -39,6 +40,14 @@ export function CatalogPage() {
     () => Math.max(1, Math.ceil((productsData?.total ?? pageSize) / pageSize)),
     [pageSize, productsData?.total],
   );
+
+  const cartQuantities = useMemo(() => {
+    const map: Partial<Record<number, number>> = {};
+    for (const line of draft?.lines ?? []) {
+      map[line.id] = line.quantity;
+    }
+    return map;
+  }, [draft?.lines]);
 
   useEffect(() => {
     if (!user || !activeCart) {
@@ -106,16 +115,71 @@ export function CatalogPage() {
         ];
 
     if (activeCartId && activeCart) {
+      try {
+        await updateCart({
+          cartId: activeCartId,
+          body: {
+            merge: true,
+            products: nextLines.map((line) => ({
+              id: line.id,
+              quantity: line.quantity,
+            })),
+          },
+        }).unwrap();
+      } catch {
+        /* keep draft; API may not persist */
+      }
+    }
+  };
+
+  const handleChangeLineQuantity = async (productId: number, nextQuantity: number) => {
+    if (!user) {
+      return;
+    }
+
+    const safeQuantity = Math.max(0, nextQuantity);
+    const sourceLines =
+      draft?.lines ??
+      activeCart?.products.map((entry) => ({
+        id: entry.id,
+        title: entry.title,
+        price: entry.price,
+        quantity: entry.quantity,
+        thumbnail: entry.thumbnail,
+        discountPercentage: entry.discountPercentage,
+      })) ??
+      [];
+
+    dispatch(
+      setDraftLineQuantity({
+        userId: user.id,
+        productId,
+        quantity: safeQuantity,
+      }),
+    );
+
+    const nextProducts = sourceLines
+      .map((line) =>
+        line.id === productId
+          ? { id: line.id, quantity: safeQuantity }
+          : { id: line.id, quantity: line.quantity },
+      )
+      .filter((line) => line.quantity > 0);
+
+    if (!activeCartId) {
+      return;
+    }
+
+    try {
       await updateCart({
         cartId: activeCartId,
         body: {
           merge: true,
-          products: nextLines.map((line) => ({
-            id: line.id,
-            quantity: line.quantity,
-          })),
+          products: nextProducts,
         },
       }).unwrap();
+    } catch {
+      /* keep draft */
     }
   };
 
@@ -147,6 +211,10 @@ export function CatalogPage() {
           onPrevPage={page > 1 ? () => setPage((prev) => prev - 1) : undefined}
           onNextPage={page < totalPages ? () => setPage((prev) => prev + 1) : undefined}
           products={productsData?.products ?? []}
+          cartQuantities={user ? cartQuantities : undefined}
+          onChangeCartQuantity={
+            user ? (productId, next) => void handleChangeLineQuantity(productId, next) : undefined
+          }
           onAddToCart={(product) => void handleAddToCart(product.id)}
         />
       </div>

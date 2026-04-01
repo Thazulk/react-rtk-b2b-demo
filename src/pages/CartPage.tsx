@@ -64,20 +64,19 @@ export function CartPage() {
   }));
 
   const handleChangeQuantity = async (productId: number, nextQuantity: number) => {
-    if (!activeCartId || !activeCart) {
+    if (!user) {
       return;
     }
+
     const safeQuantity = Math.max(0, nextQuantity);
 
-    if (user) {
-      dispatch(
-        setDraftLineQuantity({
-          userId: user.id,
-          productId,
-          quantity: safeQuantity,
-        }),
-      );
-    }
+    dispatch(
+      setDraftLineQuantity({
+        userId: user.id,
+        productId,
+        quantity: safeQuantity,
+      }),
+    );
 
     const nextProducts = sourceLines
       .map((line) =>
@@ -93,13 +92,21 @@ export function CartPage() {
       )
       .filter((line) => line.quantity > 0);
 
-    await updateCart({
-      cartId: activeCartId,
-      body: {
-        merge: true,
-        products: nextProducts,
-      },
-    }).unwrap();
+    if (!activeCartId) {
+      return;
+    }
+
+    try {
+      await updateCart({
+        cartId: activeCartId,
+        body: {
+          merge: true,
+          products: nextProducts,
+        },
+      }).unwrap();
+    } catch {
+      /* Draft is already updated; DummyJSON may not persist — keep local state. */
+    }
   };
 
   const handleLogout = () => {

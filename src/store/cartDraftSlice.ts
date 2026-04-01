@@ -14,6 +14,8 @@ export interface CartDraftLine {
 interface UserCartDraft {
   cartId: number | null;
   lines: CartDraftLine[];
+  /** After first API seed or any local edit, do not replace draft from getCart again. */
+  suppressApiHydrate?: boolean;
 }
 
 interface CartDraftState {
@@ -38,6 +40,11 @@ const cartDraftSlice = createSlice({
     ) => {
       const userKey = String(action.payload.userId);
       const existing = state.byUserId[userKey];
+
+      if (existing?.suppressApiHydrate) {
+        return;
+      }
+
       if (existing && existing.lines.length > 0) {
         return;
       }
@@ -52,6 +59,7 @@ const cartDraftSlice = createSlice({
           thumbnail: product.thumbnail,
           discountPercentage: product.discountPercentage,
         })),
+        suppressApiHydrate: true,
       };
     },
     setUserDraftCartId: (
@@ -62,7 +70,10 @@ const cartDraftSlice = createSlice({
       }>,
     ) => {
       const userKey = String(action.payload.userId);
-      const current = state.byUserId[userKey] ?? { cartId: null, lines: [] };
+      const current = state.byUserId[userKey] ?? {
+        cartId: null,
+        lines: [],
+      };
       current.cartId = action.payload.cartId;
       state.byUserId[userKey] = current;
     },
@@ -80,7 +91,10 @@ const cartDraftSlice = createSlice({
       }>,
     ) => {
       const userKey = String(action.payload.userId);
-      const current = state.byUserId[userKey] ?? { cartId: null, lines: [] };
+      const current = state.byUserId[userKey] ?? {
+        cartId: null,
+        lines: [],
+      };
       const line = current.lines.find(
         (entry) => entry.id === action.payload.product.id,
       );
@@ -98,6 +112,7 @@ const cartDraftSlice = createSlice({
         line.quantity += 1;
       }
 
+      current.suppressApiHydrate = true;
       state.byUserId[userKey] = current;
     },
     setDraftLineQuantity: (
@@ -109,7 +124,10 @@ const cartDraftSlice = createSlice({
       }>,
     ) => {
       const userKey = String(action.payload.userId);
-      const current = state.byUserId[userKey] ?? { cartId: null, lines: [] };
+      const current = state.byUserId[userKey] ?? {
+        cartId: null,
+        lines: [],
+      };
       current.lines = current.lines
         .map((line) =>
           line.id === action.payload.productId
@@ -117,6 +135,7 @@ const cartDraftSlice = createSlice({
             : line,
         )
         .filter((line) => line.quantity > 0);
+      current.suppressApiHydrate = true;
       state.byUserId[userKey] = current;
     },
     clearUserDraft: (state, action: PayloadAction<{ userId: number }>) => {

@@ -70,6 +70,7 @@ export const huHU = {
       empty: "A kosarad jelenleg üres.",
       quantityAndPrice: "{{quantity}} db x {{price}} EUR",
       total: "Összesen: {{total}} EUR",
+      removeLine: "Tétel eltávolítása",
     },
   },
 } as const;

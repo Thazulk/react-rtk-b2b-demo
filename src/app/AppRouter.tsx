@@ -1,10 +1,10 @@
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
-import { ProtectedLayout } from "@/app/layouts/protected-layout";
-import { CartPage } from "@/pages/cart-page";
-import { CatalogPage } from "@/pages/catalog-page";
-import { DashboardPage } from "@/pages/dashboard-page";
-import { LoginPage } from "@/pages/login-page";
-import { ProfilePage } from "@/pages/profile-page";
+import { ProtectedLayout } from "@/app/layouts/ProtectedLayout";
+import { CartPage } from "@/pages/CartPage";
+import { CatalogPage } from "@/pages/CatalogPage";
+import { DashboardPage } from "@/pages/DashboardPage";
+import { LoginPage } from "@/pages/LoginPage";
+import { ProfilePage } from "@/pages/ProfilePage";
 
 const router = createBrowserRouter([
   {

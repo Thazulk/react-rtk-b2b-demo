@@ -1,12 +1,18 @@
-import { useNavigate } from "react-router";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { AppNavbar } from "@/components/shared/app-navbar";
-import { CartManager } from "@/features/cart/components/cart-manager";
-import { clearSession, selectActiveCartId, selectUser } from "@/store/authSlice";
-import { selectUserDraft, selectUserDraftItemTypesCount, setDraftLineQuantity } from "@/store/cartDraftSlice";
+import { useNavigate } from "react-router";
+import { AppNavbar } from "@/components/shared/AppNavbar";
+import { CartManager } from "@/features/cart/components/CartManager";
 import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
-import { useUpdateCartMutation } from "@/store/dummyJsonApi";
 import { persistor, useAppDispatch, useAppSelector } from "@/store";
+import { clearSession, selectActiveCartId, selectUser } from "@/store/authSlice";
+import {
+  hydrateUserCartFromApi,
+  selectUserDraft,
+  selectUserDraftItemTypesCount,
+  setDraftLineQuantity,
+} from "@/store/cartDraftSlice";
+import { useUpdateCartMutation } from "@/store/dummyJsonApi";
 
 export function CartPage() {
   const dispatch = useAppDispatch();
@@ -22,6 +28,20 @@ export function CartPage() {
     activeCartId,
   });
   const [updateCart] = useUpdateCartMutation();
+
+  useEffect(() => {
+    if (!user || !activeCart) {
+      return;
+    }
+    dispatch(
+      hydrateUserCartFromApi({
+        userId: user.id,
+        cartId: activeCart.id,
+        products: activeCart.products,
+      }),
+    );
+  }, [activeCart, dispatch, user]);
+
   const sourceLines =
     draft?.lines ??
     activeCart?.products.map((product) => ({
@@ -47,13 +67,14 @@ export function CartPage() {
     if (!activeCartId || !activeCart) {
       return;
     }
+    const safeQuantity = Math.max(0, nextQuantity);
 
     if (user) {
       dispatch(
         setDraftLineQuantity({
           userId: user.id,
           productId,
-          quantity: nextQuantity,
+          quantity: safeQuantity,
         }),
       );
     }
@@ -63,7 +84,7 @@ export function CartPage() {
         line.id === productId
           ? {
               id: line.id,
-              quantity: nextQuantity,
+              quantity: safeQuantity,
             }
           : {
               id: line.id,

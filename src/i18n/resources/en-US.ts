@@ -58,6 +58,9 @@ export const enUS = {
       stockAndPrice: "{{stock}} in stock | {{price}} EUR",
       addToCart: "Add to cart",
       loginRequired: "Login required",
+      pagination: "Page {{current}} / {{total}}",
+      prev: "Previous",
+      next: "Next",
     },
     cart: {
       routeTitle: "Cart",

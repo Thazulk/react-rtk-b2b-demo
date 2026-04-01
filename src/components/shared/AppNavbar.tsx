@@ -1,8 +1,8 @@
 import { ChevronDown, ShoppingCart, UserRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 interface AppNavbarProps {
   title: string;

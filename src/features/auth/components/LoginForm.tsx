@@ -1,13 +1,13 @@
 import { type FormEvent, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAppDispatch } from "@/store";
 import { setSession } from "@/store/authSlice";
 import { useLoginMutation } from "@/store/dummyJsonApi";
-import { useAppDispatch } from "@/store";
-import { useTranslation } from "react-i18next";
 
 export function LoginForm() {
   const dispatch = useAppDispatch();
@@ -84,9 +84,7 @@ export function LoginForm() {
               onChange={(event) => setPassword(event.target.value)}
             />
           </div>
-          <p className="text-xs text-muted-foreground">
-            {t("login.credentialsHint")}
-          </p>
+          <p className="text-xs text-muted-foreground">{t("login.credentialsHint")}</p>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <Button type="submit" disabled={isLoading}>
             {isLoading ? t("login.loading") : t("login.submit")}

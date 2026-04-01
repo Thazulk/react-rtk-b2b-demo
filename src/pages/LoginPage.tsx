@@ -1,10 +1,10 @@
-import { Navigate, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import { AppNavbar } from "@/components/shared/app-navbar";
+import { Navigate, useNavigate } from "react-router";
+import { AppNavbar } from "@/components/shared/AppNavbar";
 import { Button } from "@/components/ui/button";
-import { LoginForm } from "@/features/auth/components/login-form";
-import { selectIsAuthenticated } from "@/store/authSlice";
+import { LoginForm } from "@/features/auth/components/LoginForm";
 import { useAppSelector } from "@/store";
+import { selectIsAuthenticated } from "@/store/authSlice";
 
 export function LoginPage() {
   const navigate = useNavigate();

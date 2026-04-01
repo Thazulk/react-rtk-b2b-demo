@@ -1,23 +1,25 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AppNavbar } from "@/components/shared/app-navbar";
-import { ProductCatalog } from "@/features/catalog/components/product-catalog";
-import { clearSession, selectUser, selectActiveCartId } from "@/store/authSlice";
+import { useNavigate } from "react-router";
+import { AppNavbar } from "@/components/shared/AppNavbar";
+import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
+import { ProductCatalog } from "@/features/catalog/components/ProductCatalog";
+import { persistor, useAppDispatch, useAppSelector } from "@/store";
+import { clearSession, selectActiveCartId, selectUser } from "@/store/authSlice";
 import {
   addOrIncrementDraftLine,
   hydrateUserCartFromApi,
   selectUserDraft,
   selectUserDraftItemTypesCount,
 } from "@/store/cartDraftSlice";
-import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
 import { useGetProductsQuery, useUpdateCartMutation } from "@/store/dummyJsonApi";
-import { persistor, useAppDispatch, useAppSelector } from "@/store";
 
 export function CatalogPage() {
+  const pageSize = 12;
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [page, setPage] = useState(1);
 
   const user = useAppSelector(selectUser);
   const activeCartId = useAppSelector(selectActiveCartId);
@@ -29,7 +31,14 @@ export function CatalogPage() {
     activeCartId,
   });
 
-  const { data: productsData, isLoading: isProductsLoading } = useGetProductsQuery({ limit: 20 });
+  const { data: productsData, isLoading: isProductsLoading } = useGetProductsQuery({
+    limit: pageSize,
+    skip: (page - 1) * pageSize,
+  });
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil((productsData?.total ?? pageSize) / pageSize)),
+    [pageSize, productsData?.total],
+  );
 
   useEffect(() => {
     if (!user || !activeCart) {
@@ -133,6 +142,10 @@ export function CatalogPage() {
         <ProductCatalog
           canManageCart={Boolean(user)}
           isLoading={isProductsLoading || isBootstrappingCart || isUpdatingCart}
+          currentPage={page}
+          totalPages={totalPages}
+          onPrevPage={page > 1 ? () => setPage((prev) => prev - 1) : undefined}
+          onNextPage={page < totalPages ? () => setPage((prev) => prev + 1) : undefined}
           products={productsData?.products ?? []}
           onAddToCart={(product) => void handleAddToCart(product.id)}
         />

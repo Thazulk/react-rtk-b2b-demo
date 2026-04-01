@@ -1,6 +1,6 @@
 import { House, LayoutGrid, ShoppingCart, UserRound } from "lucide-react";
-import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
+import { NavLink } from "react-router";
 import { cn } from "@/lib/utils";
 
 const navItems = [

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Navigate, Outlet } from "react-router";
-import { NavigationDrawer } from "@/components/shared/navigation-drawer";
+import { NavigationDrawer } from "@/components/shared/NavigationDrawer";
 import {
   clearSession,
   selectAccessToken,

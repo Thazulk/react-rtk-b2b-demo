@@ -59,6 +59,9 @@ export const huHU = {
       stockAndPrice: "{{stock}} készlet | {{price}} EUR",
       addToCart: "Kosárba",
       loginRequired: "Belépés szükséges",
+      pagination: "{{current}} / {{total}} oldal",
+      prev: "Előző",
+      next: "Következő",
     },
     cart: {
       routeTitle: "Kosár",

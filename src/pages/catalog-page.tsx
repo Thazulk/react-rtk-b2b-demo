@@ -1,11 +1,18 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { AppNavbar } from "@/components/shared/app-navbar";
 import { ProductCatalog } from "@/features/catalog/components/product-catalog";
 import { clearSession, selectUser, selectActiveCartId } from "@/store/authSlice";
+import {
+  addOrIncrementDraftLine,
+  hydrateUserCartFromApi,
+  selectUserDraft,
+  selectUserDraftItemTypesCount,
+} from "@/store/cartDraftSlice";
 import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
 import { useGetProductsQuery, useUpdateCartMutation } from "@/store/dummyJsonApi";
-import { persistor, useAppDispatch, useAppSelector } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/store";
 
 export function CatalogPage() {
   const dispatch = useAppDispatch();
@@ -14,6 +21,8 @@ export function CatalogPage() {
 
   const user = useAppSelector(selectUser);
   const activeCartId = useAppSelector(selectActiveCartId);
+  const draft = useAppSelector((state) => selectUserDraft(state, user?.id));
+  const draftItemTypesCount = useAppSelector((state) => selectUserDraftItemTypesCount(state, user?.id));
   const [updateCart, { isLoading: isUpdatingCart }] = useUpdateCartMutation();
   const { activeCart, cartItemTypesCount, isBootstrappingCart } = useActiveCart({
     userId: user?.id,
@@ -22,39 +31,87 @@ export function CatalogPage() {
 
   const { data: productsData, isLoading: isProductsLoading } = useGetProductsQuery({ limit: 20 });
 
+  useEffect(() => {
+    if (!user || !activeCart) {
+      return;
+    }
+    dispatch(
+      hydrateUserCartFromApi({
+        userId: user.id,
+        cartId: activeCart.id,
+        products: activeCart.products,
+      }),
+    );
+  }, [activeCart, dispatch, user]);
+
   const handleAddToCart = async (productId: number) => {
-    if (!activeCartId || !activeCart) {
+    if (!user || !productsData) {
       return;
     }
 
-    const existing = activeCart.products.find((item) => item.id === productId);
-    const nextProducts = activeCart.products.map((item) => ({
-      id: item.id,
-      quantity: item.quantity,
-    }));
-
-    if (existing) {
-      const existingIndex = nextProducts.findIndex((item) => item.id === productId);
-      nextProducts[existingIndex] = {
-        id: productId,
-        quantity: existing.quantity + 1,
-      };
-    } else {
-      nextProducts.push({ id: productId, quantity: 1 });
+    const selectedProduct = productsData.products.find((product) => product.id === productId);
+    if (!selectedProduct) {
+      return;
     }
 
-    await updateCart({
-      cartId: activeCartId,
-      body: {
-        merge: true,
-        products: nextProducts,
-      },
-    }).unwrap();
+    dispatch(
+      addOrIncrementDraftLine({
+        userId: user.id,
+        product: {
+          id: selectedProduct.id,
+          title: selectedProduct.title,
+          price: selectedProduct.price,
+          thumbnail: selectedProduct.thumbnail,
+          discountPercentage: selectedProduct.discountPercentage,
+        },
+      }),
+    );
+
+    const previousLines =
+      draft?.lines ??
+      activeCart?.products.map((entry) => ({
+        id: entry.id,
+        title: entry.title,
+        price: entry.price,
+        quantity: entry.quantity,
+        thumbnail: entry.thumbnail,
+        discountPercentage: entry.discountPercentage,
+      })) ??
+      [];
+
+    const existingLine = previousLines.find((line) => line.id === productId);
+    const nextLines = existingLine
+      ? previousLines.map((line) =>
+          line.id === productId ? { ...line, quantity: line.quantity + 1 } : line,
+        )
+      : [
+          ...previousLines,
+          {
+            id: selectedProduct.id,
+            title: selectedProduct.title,
+            price: selectedProduct.price,
+            quantity: 1,
+            thumbnail: selectedProduct.thumbnail,
+            discountPercentage: selectedProduct.discountPercentage,
+          },
+        ];
+
+    if (activeCartId && activeCart) {
+      await updateCart({
+        cartId: activeCartId,
+        body: {
+          merge: true,
+          products: nextLines.map((line) => ({
+            id: line.id,
+            quantity: line.quantity,
+          })),
+        },
+      }).unwrap();
+    }
   };
 
   const handleLogout = () => {
     dispatch(clearSession());
-    void persistor.purge();
     navigate("/login", { replace: true });
   };
 
@@ -64,7 +121,7 @@ export function CatalogPage() {
         <AppNavbar
           title={t("catalog.routeTitle")}
           userName={user ? `${user.firstName} ${user.lastName}` : t("navbar.guest")}
-          cartItemCount={cartItemTypesCount}
+          cartItemCount={draftItemTypesCount || cartItemTypesCount}
           onTitleClick={() => navigate("/dashboard")}
           onCartClick={() => navigate("/cart")}
           onProfile={() => navigate("/profile")}
@@ -72,7 +129,7 @@ export function CatalogPage() {
         />
 
         <ProductCatalog
-          canManageCart={Boolean(activeCartId)}
+          canManageCart={Boolean(user)}
           isLoading={isProductsLoading || isBootstrappingCart || isUpdatingCart}
           products={productsData?.products ?? []}
           onAddToCart={(product) => void handleAddToCart(product.id)}

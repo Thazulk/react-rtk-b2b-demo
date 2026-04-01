@@ -11,6 +11,7 @@ import {
 } from "redux-persist";
 import createWebStorage from "redux-persist/es/storage/createWebStorage";
 import { authReducer } from "@/store/authSlice";
+import { cartDraftReducer } from "@/store/cartDraftSlice";
 import { dummyJsonApi } from "@/store/dummyJsonApi";
 
 const createNoopStorage = () => ({
@@ -28,8 +29,15 @@ const authPersistConfig = {
   whitelist: ["accessToken", "user", "activeCartId"],
 };
 
+const cartDraftPersistConfig = {
+  key: "cartDraft",
+  storage,
+  whitelist: ["byUserId"],
+};
+
 const rootReducer = combineReducers({
   auth: persistReducer(authPersistConfig, authReducer),
+  cartDraft: persistReducer(cartDraftPersistConfig, cartDraftReducer),
   [dummyJsonApi.reducerPath]: dummyJsonApi.reducer,
 });
 

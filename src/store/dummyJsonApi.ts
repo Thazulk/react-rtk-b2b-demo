@@ -3,9 +3,11 @@ import type { AuthState } from "@/store/authSlice";
 import type {
   AddCartRequest,
   Cart,
+  CartProduct,
   CartListResponse,
   LoginRequest,
   LoginResponse,
+  Product,
   ProductListResponse,
   UpdateCartRequest,
   User,
@@ -68,6 +70,92 @@ export const dummyJsonApi = createApi({
         method: "PUT",
         body,
       }),
+      async onQueryStarted({ cartId, body }, { dispatch, getState, queryFulfilled }) {
+        const state = getState() as any;
+
+        const currentCart = dummyJsonApi.endpoints.getCartById.select(cartId)(state).data;
+        if (!currentCart) {
+          await queryFulfilled.catch(() => undefined);
+          return;
+        }
+
+        const productMetaById = new Map<number, Product>();
+        const queries = Object.values(
+          (state[dummyJsonApi.reducerPath]?.queries ?? {}) as Record<
+            string,
+            {
+              endpointName?: string;
+              data?: unknown;
+            }
+          >,
+        );
+        for (const queryState of queries) {
+          if (queryState.endpointName !== "getProducts") {
+            continue;
+          }
+          const data = queryState.data as ProductListResponse | undefined;
+          for (const product of data?.products ?? []) {
+            productMetaById.set(product.id, product);
+          }
+        }
+
+        const quantities = new Map<number, number>();
+        if (body.merge) {
+          for (const product of currentCart.products) {
+            quantities.set(product.id, product.quantity);
+          }
+        }
+        for (const product of body.products) {
+          quantities.set(product.id, product.quantity);
+        }
+
+        const optimisticProducts: CartProduct[] = [];
+        for (const [productId, quantity] of quantities) {
+          if (quantity <= 0) {
+            continue;
+          }
+          const existing = currentCart.products.find((item) => item.id === productId);
+          const meta = productMetaById.get(productId);
+          const price = existing?.price ?? meta?.price ?? 0;
+          const discountPercentage = existing?.discountPercentage ?? meta?.discountPercentage ?? 0;
+          const total = Number((price * quantity).toFixed(2));
+          const discountedTotal = Number((total * (1 - discountPercentage / 100)).toFixed(2));
+
+          optimisticProducts.push({
+            id: productId,
+            title: existing?.title ?? meta?.title ?? `Product #${productId}`,
+            price,
+            quantity,
+            total,
+            discountPercentage,
+            discountedTotal,
+            thumbnail: existing?.thumbnail ?? meta?.thumbnail ?? "",
+          });
+        }
+
+        const total = Number(optimisticProducts.reduce((sum, item) => sum + item.total, 0).toFixed(2));
+        const discountedTotal = Number(
+          optimisticProducts.reduce((sum, item) => sum + item.discountedTotal, 0).toFixed(2),
+        );
+        const totalQuantity = optimisticProducts.reduce((sum, item) => sum + item.quantity, 0);
+
+        const patchResult = dispatch(
+          dummyJsonApi.util.updateQueryData("getCartById", cartId, (draft) => {
+            draft.products = optimisticProducts;
+            draft.total = total;
+            draft.discountedTotal = discountedTotal;
+            draft.totalProducts = optimisticProducts.length;
+            draft.totalQuantity = totalQuantity;
+          }),
+        );
+
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(dummyJsonApi.util.upsertQueryData("getCartById", cartId, data));
+        } catch {
+          patchResult.undo();
+        }
+      },
       invalidatesTags: (_result, _error, arg) => [{ type: "Cart", id: arg.cartId }],
     }),
   }),

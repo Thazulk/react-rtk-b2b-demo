@@ -4,8 +4,9 @@ import { AppNavbar } from "@/components/shared/app-navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { clearSession, selectActiveCartId, selectUser } from "@/store/authSlice";
+import { selectUserDraftItemTypesCount } from "@/store/cartDraftSlice";
 import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
-import { persistor, useAppDispatch, useAppSelector } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/store";
 
 export function DashboardPage() {
   const dispatch = useAppDispatch();
@@ -14,6 +15,7 @@ export function DashboardPage() {
 
   const user = useAppSelector(selectUser);
   const activeCartId = useAppSelector(selectActiveCartId);
+  const draftItemTypesCount = useAppSelector((state) => selectUserDraftItemTypesCount(state, user?.id));
   const { cartItemTypesCount } = useActiveCart({
     userId: user?.id,
     activeCartId,
@@ -21,11 +23,11 @@ export function DashboardPage() {
 
   const handleLogout = () => {
     dispatch(clearSession());
-    void persistor.purge();
     navigate("/login", { replace: true });
   };
 
-  const hasCartContent = cartItemTypesCount > 0;
+  const displayedCartItemTypesCount = draftItemTypesCount || cartItemTypesCount;
+  const hasCartContent = displayedCartItemTypesCount > 0;
 
   return (
     <main className="min-h-svh w-full lg:pl-56">
@@ -33,7 +35,7 @@ export function DashboardPage() {
         <AppNavbar
           title={t("dashboard.routeTitle")}
           userName={user ? `${user.firstName} ${user.lastName}` : t("navbar.guest")}
-          cartItemCount={cartItemTypesCount}
+          cartItemCount={displayedCartItemTypesCount}
           onTitleClick={() => navigate("/dashboard")}
           onCartClick={() => navigate("/cart")}
           onProfile={() => navigate("/profile")}

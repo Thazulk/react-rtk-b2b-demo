@@ -3,9 +3,10 @@ import { useTranslation } from "react-i18next";
 import { AppNavbar } from "@/components/shared/app-navbar";
 import { CartManager } from "@/features/cart/components/cart-manager";
 import { clearSession, selectActiveCartId, selectUser } from "@/store/authSlice";
+import { selectUserDraft, selectUserDraftItemTypesCount, setDraftLineQuantity } from "@/store/cartDraftSlice";
 import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
 import { useUpdateCartMutation } from "@/store/dummyJsonApi";
-import { persistor, useAppDispatch, useAppSelector } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/store";
 
 export function CartPage() {
   const dispatch = useAppDispatch();
@@ -14,37 +15,62 @@ export function CartPage() {
 
   const user = useAppSelector(selectUser);
   const activeCartId = useAppSelector(selectActiveCartId);
+  const draft = useAppSelector((state) => selectUserDraft(state, user?.id));
+  const draftItemTypesCount = useAppSelector((state) => selectUserDraftItemTypesCount(state, user?.id));
   const { activeCart, cartItemTypesCount } = useActiveCart({
     userId: user?.id,
     activeCartId,
   });
   const [updateCart] = useUpdateCartMutation();
-  const cartLines =
+  const sourceLines =
+    draft?.lines ??
     activeCart?.products.map((product) => ({
-      product: {
-        id: product.id,
-        title: product.title,
-        price: product.price,
-      },
+      id: product.id,
+      title: product.title,
+      price: product.price,
       quantity: product.quantity,
-    })) ?? [];
+      thumbnail: product.thumbnail,
+      discountPercentage: product.discountPercentage,
+    })) ??
+    [];
+
+  const cartLines = sourceLines.map((line) => ({
+    product: {
+      id: line.id,
+      title: line.title,
+      price: line.price,
+    },
+    quantity: line.quantity,
+  }));
 
   const handleChangeQuantity = async (productId: number, nextQuantity: number) => {
     if (!activeCartId || !activeCart) {
       return;
     }
 
-    const nextProducts = activeCart.products
-      .map((item) => ({ id: item.id, quantity: item.quantity }))
-      .map((item) =>
-        item.id === productId
+    if (user) {
+      dispatch(
+        setDraftLineQuantity({
+          userId: user.id,
+          productId,
+          quantity: nextQuantity,
+        }),
+      );
+    }
+
+    const nextProducts = sourceLines
+      .map((line) =>
+        line.id === productId
           ? {
-              id: item.id,
+              id: line.id,
               quantity: nextQuantity,
             }
-          : item,
+          : {
+              id: line.id,
+              quantity: line.quantity,
+            },
       )
-      .filter((item) => item.quantity > 0);
+      .filter((line) => line.quantity > 0);
 
     await updateCart({
       cartId: activeCartId,
@@ -57,7 +83,6 @@ export function CartPage() {
 
   const handleLogout = () => {
     dispatch(clearSession());
-    void persistor.purge();
     navigate("/login", { replace: true });
   };
 
@@ -67,7 +92,7 @@ export function CartPage() {
         <AppNavbar
           title={t("cart.routeTitle")}
           userName={user ? `${user.firstName} ${user.lastName}` : t("navbar.guest")}
-          cartItemCount={cartItemTypesCount}
+          cartItemCount={draftItemTypesCount || cartItemTypesCount}
           onTitleClick={() => navigate("/dashboard")}
           onCartClick={() => navigate("/cart")}
           onProfile={() => navigate("/profile")}

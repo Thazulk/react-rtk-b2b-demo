@@ -66,9 +66,11 @@ export function AppNavbar({
           >
             <ShoppingCart aria-hidden="true" />
             <span className="sr-only">{t("navbar.cart")}</span>
-            <span className="absolute -top-1 -right-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
-              {cartItemCount}
-            </span>
+            {cartItemCount > 0 ? (
+              <span className="absolute -top-1 -right-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
+                {cartItemCount}
+              </span>
+            ) : null}
           </Button>
 
           <ThemeToggle />

@@ -6,7 +6,7 @@ import { clearSession, selectActiveCartId, selectUser } from "@/store/authSlice"
 import { selectUserDraft, selectUserDraftItemTypesCount, setDraftLineQuantity } from "@/store/cartDraftSlice";
 import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
 import { useUpdateCartMutation } from "@/store/dummyJsonApi";
-import { useAppDispatch, useAppSelector } from "@/store";
+import { persistor, useAppDispatch, useAppSelector } from "@/store";
 
 export function CartPage() {
   const dispatch = useAppDispatch();
@@ -83,6 +83,7 @@ export function CartPage() {
 
   const handleLogout = () => {
     dispatch(clearSession());
+    void persistor.purge();
     navigate("/login", { replace: true });
   };
 
@@ -93,7 +94,7 @@ export function CartPage() {
           title={t("cart.routeTitle")}
           userName={user ? `${user.firstName} ${user.lastName}` : t("navbar.guest")}
           cartItemCount={draftItemTypesCount || cartItemTypesCount}
-          onTitleClick={() => navigate("/dashboard")}
+          onTitleClick={() => navigate("/")}
           onCartClick={() => navigate("/cart")}
           onProfile={() => navigate("/profile")}
           onLogout={handleLogout}

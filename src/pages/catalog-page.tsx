@@ -12,7 +12,7 @@ import {
 } from "@/store/cartDraftSlice";
 import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
 import { useGetProductsQuery, useUpdateCartMutation } from "@/store/dummyJsonApi";
-import { useAppDispatch, useAppSelector } from "@/store";
+import { persistor, useAppDispatch, useAppSelector } from "@/store";
 
 export function CatalogPage() {
   const dispatch = useAppDispatch();
@@ -112,6 +112,7 @@ export function CatalogPage() {
 
   const handleLogout = () => {
     dispatch(clearSession());
+    void persistor.purge();
     navigate("/login", { replace: true });
   };
 
@@ -122,10 +123,10 @@ export function CatalogPage() {
           title={t("catalog.routeTitle")}
           userName={user ? `${user.firstName} ${user.lastName}` : t("navbar.guest")}
           cartItemCount={draftItemTypesCount || cartItemTypesCount}
-          onTitleClick={() => navigate("/dashboard")}
-          onCartClick={() => navigate("/cart")}
-          onProfile={() => navigate("/profile")}
-          onLogout={handleLogout}
+          onTitleClick={() => navigate("/")}
+          onCartClick={user ? () => navigate("/cart") : undefined}
+          onProfile={user ? () => navigate("/profile") : undefined}
+          onLogout={user ? handleLogout : undefined}
         />
 
         <ProductCatalog

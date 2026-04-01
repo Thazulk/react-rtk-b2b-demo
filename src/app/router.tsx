@@ -8,24 +8,23 @@ import { ProfilePage } from "@/pages/profile-page";
 
 const router = createBrowserRouter([
   {
+    path: "/",
+    element: <Navigate to="/catalog" replace />,
+  },
+  {
+    path: "/catalog",
+    element: <CatalogPage />,
+  },
+  {
     path: "/login",
     element: <LoginPage />,
   },
   {
-    path: "/",
     element: <ProtectedLayout />,
     children: [
       {
-        index: true,
-        element: <Navigate to="/dashboard" replace />,
-      },
-      {
         path: "dashboard",
         element: <DashboardPage />,
-      },
-      {
-        path: "catalog",
-        element: <CatalogPage />,
       },
       {
         path: "cart",
@@ -39,7 +38,7 @@ const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: <Navigate to="/login" replace />,
+    element: <Navigate to="/catalog" replace />,
   },
 ]);
 

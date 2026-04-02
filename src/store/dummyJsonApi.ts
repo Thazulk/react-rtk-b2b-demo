@@ -1,6 +1,6 @@
 import type { AuthState } from "@/store/authSlice";
-import { clearSession } from "@/store/authSlice";
-import type { RootState } from "@/store/store";
+import { clearSession, setAuthTokens } from "@/store/authSlice";
+import type { AppDispatch, RootState } from "@/store/store";
 import type {
   Cart,
   CartListResponse,
@@ -10,6 +10,7 @@ import type {
   Product,
   ProductCategory,
   ProductListResponse,
+  RefreshResponse,
   UpdateCartRequest,
   User,
 } from "@/types/dummyjson";
@@ -38,8 +39,64 @@ interface UpdateCartMutationArgs {
   optimisticProducts?: OptimisticProductMeta[];
 }
 
+const DUMMYJSON_ORIGIN = "https://dummyjson.com";
+
+const ACCESS_TOKEN_EXPIRES_MINS = 30;
+
+let refreshPromise: Promise<boolean> | null = null;
+
+async function tryRefreshSession(
+  getState: () => unknown,
+  dispatch: AppDispatch,
+): Promise<boolean> {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = (async () => {
+    try {
+      const refreshToken = (getState() as RootState).auth.refreshToken;
+      if (!refreshToken) {
+        return false;
+      }
+
+      const res = await fetch(`${DUMMYJSON_ORIGIN}/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          refreshToken,
+          expiresInMins: ACCESS_TOKEN_EXPIRES_MINS,
+        }),
+      });
+
+      if (!res.ok) {
+        return false;
+      }
+
+      const data = (await res.json()) as RefreshResponse;
+      if (!data.accessToken || !data.refreshToken) {
+        return false;
+      }
+
+      dispatch(setAuthTokens(data));
+      return true;
+    } catch {
+      return false;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
+function isPublicAuthPath(args: string | FetchArgs): boolean {
+  const path = typeof args === "string" ? args : args.url;
+  return path.includes("auth/login") || path.includes("auth/refresh");
+}
+
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: "https://dummyjson.com",
+  baseUrl: DUMMYJSON_ORIGIN,
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as HeaderState).auth.accessToken;
     if (token) {
@@ -54,7 +111,23 @@ const baseQueryWithAuthHandling: BaseQueryFn<
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  const result = await rawBaseQuery(args, api, extraOptions);
+  let result = await rawBaseQuery(args, api, extraOptions);
+
+  if (result.error?.status !== 401) {
+    return result;
+  }
+
+  if (isPublicAuthPath(args)) {
+    return result;
+  }
+
+  const refreshed = await tryRefreshSession(api.getState, api.dispatch);
+  if (!refreshed) {
+    api.dispatch(clearSession());
+    return result;
+  }
+
+  result = await rawBaseQuery(args, api, extraOptions);
   if (result.error?.status === 401) {
     api.dispatch(clearSession());
   }

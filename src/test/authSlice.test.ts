@@ -23,18 +23,38 @@ function createStore() {
 }
 
 describe("authSlice", () => {
-  it("setSession stores token and user", () => {
+  it("setSession stores tokens and user", () => {
     const store = createStore();
     store.dispatch(
       setSession({
         accessToken: "tok",
+        refreshToken: "ref",
         user: testUser,
       }),
     );
     expect(store.getState().auth).toMatchObject({
       accessToken: "tok",
+      refreshToken: "ref",
       user: testUser,
     });
+  });
+
+  it("setSession without refreshToken keeps previous refresh token", () => {
+    const store = createStore();
+    store.dispatch(
+      setSession({
+        accessToken: "a",
+        refreshToken: "r1",
+        user: testUser,
+      }),
+    );
+    store.dispatch(
+      setSession({
+        accessToken: "b",
+        user: testUser,
+      }),
+    );
+    expect(store.getState().auth.refreshToken).toBe("r1");
   });
 
   it("clearSession resets auth and cart draft", () => {
@@ -42,12 +62,14 @@ describe("authSlice", () => {
     store.dispatch(
       setSession({
         accessToken: "tok",
+        refreshToken: "ref",
         user: testUser,
       }),
     );
     store.dispatch(clearSession());
     expect(store.getState().auth).toEqual({
       accessToken: null,
+      refreshToken: null,
       user: null,
     });
     expect(store.getState().cartDraft.byUserId).toEqual({});

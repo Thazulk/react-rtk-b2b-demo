@@ -35,6 +35,7 @@ export function useLogin() {
       dispatch(
         setSession({
           accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
           user: {
             id: response.id,
             firstName: response.firstName,

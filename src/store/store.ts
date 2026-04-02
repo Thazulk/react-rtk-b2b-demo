@@ -22,12 +22,11 @@ const noopStorage = {
 
 const isServer = typeof window === "undefined";
 const storage = isServer ? noopStorage : createWebStorage("local");
-const authStorage = isServer ? noopStorage : createWebStorage("session");
 
 const authPersistConfig = {
   key: "auth",
-  storage: authStorage,
-  whitelist: ["accessToken", "user"],
+  storage,
+  whitelist: ["accessToken", "refreshToken", "user"],
 };
 
 const cartDraftPersistConfig = {

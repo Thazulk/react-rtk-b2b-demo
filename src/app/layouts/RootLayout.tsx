@@ -1,50 +1,24 @@
-import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Outlet, useLocation, useNavigate } from "react-router";
+import { Outlet } from "react-router";
 import { AppNavbar } from "@/components/shared/AppNavbar";
-import {
-  NavigationDrawer,
-  NavigationLinks,
-  navItems,
-} from "@/components/shared/NavigationDrawer";
+import { NavigationDrawer, NavigationLinks } from "@/components/shared/NavigationDrawer";
+import { navItems } from "@/config/navigation";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
-import { persistor, useAppDispatch, useAppSelector } from "@/store";
-import { clearSession, selectActiveCartId, selectUser } from "@/store/authSlice";
-import { selectUserDraftItemTypesCount } from "@/store/cartDraftSlice";
+import { useRootLayout } from "@/hooks/use-root-layout";
 
-/** App shell: navbar, drawer, and main content area (`Outlet`). */
 export function RootLayout() {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const location = useLocation();
   const { t } = useTranslation();
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-
-  useEffect(() => {
-    setMobileDrawerOpen(false);
-  }, [location.pathname]);
-
-  const user = useAppSelector(selectUser);
-  const activeCartId = useAppSelector(selectActiveCartId);
-  const draftItemTypesCount = useAppSelector((state) =>
-    selectUserDraftItemTypesCount(state, user?.id),
-  );
-  const { cartItemTypesCount } = useActiveCart({
-    userId: user?.id,
-    activeCartId,
-  });
-
-  const isLoginRoute = location.pathname === "/login";
-  const cartBadgeCount = draftItemTypesCount || cartItemTypesCount;
-
-  const handleLogout = () => {
-    dispatch(clearSession());
-    void persistor.purge();
-    navigate("/login", { replace: true });
-  };
-
-  const closeMobileDrawer = useCallback(() => setMobileDrawerOpen(false), []);
+  const {
+    user,
+    isLoginRoute,
+    cartBadgeCount,
+    mobileDrawerOpen,
+    setMobileDrawerOpen,
+    closeMobileDrawer,
+    toggleMobileDrawer,
+    handleLogout,
+    navigate,
+  } = useRootLayout();
 
   return (
     <>
@@ -57,7 +31,7 @@ export function RootLayout() {
         onProfile={user ? () => navigate("/profile") : undefined}
         onLogout={user ? handleLogout : undefined}
         onLogin={!user && !isLoginRoute ? () => navigate("/login") : undefined}
-        onMenuToggle={() => setMobileDrawerOpen((prev) => !prev)}
+        onMenuToggle={toggleMobileDrawer}
       />
       <NavigationDrawer />
 

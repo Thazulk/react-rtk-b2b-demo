@@ -12,7 +12,7 @@ export const resources = {
 
 void i18n.use(initReactI18next).init({
   resources,
-  lng: "hu-HU",
+  lng: "en-US",
   fallbackLng: "en-US",
   supportedLngs: ["en-US", "hu-HU"],
   defaultNS,

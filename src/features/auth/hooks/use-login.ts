@@ -1,10 +1,10 @@
+import { useAppDispatch } from "@/store";
+import { setSession } from "@/store/authSlice";
+import { useLoginMutation } from "@/store/dummyJsonApi";
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { useAppDispatch } from "@/store";
-import { setSession } from "@/store/authSlice";
-import { useLoginMutation } from "@/store/dummyJsonApi";
 
 export function useLogin() {
   const dispatch = useAppDispatch();

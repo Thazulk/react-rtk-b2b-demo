@@ -1,30 +1,13 @@
-import { House, LayoutGrid, ShoppingCart, UserRound } from "lucide-react";
-import type { ComponentType, SVGProps } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router";
 import { cn } from "@/lib/utils";
+import type { NavItem } from "@/config/navigation";
+import { navItems } from "@/config/navigation";
 
-export interface NavItem {
-  to: string;
-  key: string;
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
-}
-
-export const navItems: NavItem[] = [
-  { to: "/dashboard", key: "drawer.dashboard", icon: House },
-  { to: "/catalog", key: "drawer.catalog", icon: LayoutGrid },
-  { to: "/cart", key: "drawer.cart", icon: ShoppingCart },
-  { to: "/profile", key: "drawer.profile", icon: UserRound },
-];
-
-interface NavigationDrawerProps {
-  onNavClick?: () => void;
-}
-
-export function NavigationDrawer({ onNavClick }: NavigationDrawerProps) {
+export function NavigationDrawer() {
   return (
     <aside className="fixed top-14 left-0 z-40 hidden h-[calc(100svh-3.5rem)] w-56 border-r bg-background lg:block">
-      <NavigationLinks items={navItems} onNavClick={onNavClick} />
+      <NavigationLinks items={navItems} />
     </aside>
   );
 }

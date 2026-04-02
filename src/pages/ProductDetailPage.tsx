@@ -1,22 +1,15 @@
 import { Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
-import { cn } from "@/lib/utils";
 import { CartLineQuantityControls } from "@/features/cart/components/CartLineQuantityControls";
-import { useAppDispatch, useAppSelector } from "@/store";
-import { selectActiveCartId, selectUser } from "@/store/authSlice";
-import {
-  addOrIncrementDraftLine,
-  selectCartQuantitiesMap,
-  selectUserDraft,
-  setDraftLineQuantity,
-} from "@/store/cartDraftSlice";
-import { useGetProductByIdQuery, useUpdateCartMutation } from "@/store/dummyJsonApi";
+import { useCartActions } from "@/features/cart/hooks/use-cart-actions";
+import { getDiscountedPrice } from "@/features/catalog/utils/price";
+import { getAvailabilityColorClass } from "@/features/catalog/utils/availability";
+import { cn } from "@/lib/utils";
+import { useGetProductByIdQuery } from "@/store/dummyJsonApi";
 
 export function ProductDetailPage() {
   const { t } = useTranslation();
@@ -25,153 +18,22 @@ export function ProductDetailPage() {
   const productId = productIdParam ? Number(productIdParam) : NaN;
   const isValidId = Number.isFinite(productId) && productId > 0;
 
-  const dispatch = useAppDispatch();
-  const user = useAppSelector(selectUser);
-  const activeCartId = useAppSelector(selectActiveCartId);
-  const draft = useAppSelector((state) => selectUserDraft(state, user?.id));
-  const quantitiesMap = useAppSelector((state) => selectCartQuantitiesMap(state, user?.id));
-  const cartQty = quantitiesMap[productId] ?? 0;
-
   const { data: product, isLoading, isError } = useGetProductByIdQuery(productId, {
     skip: !isValidId,
   });
 
-  const [updateCart, { isLoading: isUpdatingCart }] = useUpdateCartMutation();
-  const { activeCart, isBootstrappingCart } = useActiveCart({
-    userId: user?.id,
-    activeCartId,
-  });
+  const {
+    user,
+    cartQuantities,
+    isUpdatingCart,
+    isBootstrappingCart,
+    addToCart,
+    changeLineQuantity,
+  } = useCartActions();
 
+  const cartQty = cartQuantities[productId] ?? 0;
   const moq = product?.minimumOrderQuantity ?? 1;
-
-  const handleAddToCart = async () => {
-    if (!user || !product) {
-      return;
-    }
-
-    dispatch(
-      addOrIncrementDraftLine({
-        userId: user.id,
-        product: {
-          id: product.id,
-          title: product.title,
-          price: product.price,
-          thumbnail: product.thumbnail,
-          discountPercentage: product.discountPercentage,
-          minimumOrderQuantity: moq,
-        },
-      }),
-    );
-
-    const previousLines =
-      draft?.lines ??
-      activeCart?.products.map((entry) => ({
-        id: entry.id,
-        title: entry.title,
-        price: entry.price,
-        quantity: entry.quantity,
-        thumbnail: entry.thumbnail,
-        discountPercentage: entry.discountPercentage,
-      })) ??
-      [];
-
-    const initialQty = Math.max(1, moq);
-    const existingLine = previousLines.find((line) => line.id === product.id);
-    const nextLines = existingLine
-      ? previousLines.map((line) =>
-          line.id === product.id ? { ...line, quantity: line.quantity + 1 } : line,
-        )
-      : [
-          ...previousLines,
-          {
-            id: product.id,
-            title: product.title,
-            price: product.price,
-            quantity: initialQty,
-            thumbnail: product.thumbnail,
-            discountPercentage: product.discountPercentage,
-          },
-        ];
-
-    if (activeCartId && activeCart) {
-      try {
-        await updateCart({
-          cartId: activeCartId,
-          body: {
-            merge: true,
-            products: nextLines.map((line) => ({
-              id: line.id,
-              quantity: line.quantity,
-            })),
-          },
-          optimisticProducts: nextLines.map((line) => ({
-            id: line.id,
-            title: line.title,
-            price: line.price,
-            discountPercentage: line.discountPercentage,
-            thumbnail: line.thumbnail,
-          })),
-        }).unwrap();
-      } catch {
-        toast.error(t("errors.updateCartFailed"));
-      }
-    }
-  };
-
-  const handleChangeQty = async (nextQuantity: number) => {
-    if (!user || !product) {
-      return;
-    }
-
-    const safeQuantity = Math.max(0, nextQuantity);
-    const sourceLines =
-      draft?.lines ??
-      activeCart?.products.map((entry) => ({
-        id: entry.id,
-        title: entry.title,
-        price: entry.price,
-        quantity: entry.quantity,
-        thumbnail: entry.thumbnail,
-        discountPercentage: entry.discountPercentage,
-      })) ??
-      [];
-
-    dispatch(
-      setDraftLineQuantity({
-        userId: user.id,
-        productId: product.id,
-        quantity: safeQuantity,
-      }),
-    );
-
-    const nextProducts = sourceLines
-      .map((line) =>
-        line.id === product.id
-          ? { id: line.id, quantity: safeQuantity }
-          : { id: line.id, quantity: line.quantity },
-      )
-      .filter((line) => line.quantity > 0);
-
-    if (!activeCartId) {
-      return;
-    }
-
-    try {
-      await updateCart({
-        cartId: activeCartId,
-        body: { merge: true, products: nextProducts },
-        optimisticProducts: sourceLines.map((line) => ({
-          id: line.id,
-          title: line.title,
-          price: line.price,
-          discountPercentage: line.discountPercentage,
-          thumbnail: line.thumbnail,
-        })),
-      }).unwrap();
-    } catch {
-      toast.error(t("errors.updateCartFailed"));
-    }
-  };
+  const hasDiscount = (product?.discountPercentage ?? 0) > 0;
 
   if (!isValidId) {
     return (
@@ -220,11 +82,7 @@ export function ProductDetailPage() {
                 <span
                   className={cn(
                     "rounded-full px-2 py-0.5 text-xs font-medium",
-                    product.availabilityStatus === "In Stock"
-                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                      : product.availabilityStatus === "Low Stock"
-                        ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
-                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+                    getAvailabilityColorClass(product.availabilityStatus),
                   )}
                 >
                   {product.availabilityStatus}
@@ -233,9 +91,7 @@ export function ProductDetailPage() {
             </CardTitle>
             <CardDescription className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span>{product.category}</span>
-              {product.brand ? (
-                <span>{product.brand}</span>
-              ) : null}
+              {product.brand ? <span>{product.brand}</span> : null}
               <span className="inline-flex items-center gap-0.5">
                 <Star className="size-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
                 {t("catalog.ratingLabel", { rating: String(product.rating) })}
@@ -244,7 +100,9 @@ export function ProductDetailPage() {
                 {t("catalog.stockAndPrice", {
                   stock: String(product.stock),
                   price: product.price.toFixed(2),
-                }).split("|")[0].trim()}
+                })
+                  .split("|")[0]
+                  .trim()}
               </span>
             </CardDescription>
           </CardHeader>
@@ -258,10 +116,10 @@ export function ProductDetailPage() {
               <p className="text-sm text-muted-foreground">{product.description}</p>
 
               <div className="flex flex-wrap items-baseline gap-2">
-                {product.discountPercentage > 0 ? (
+                {hasDiscount ? (
                   <>
                     <span className="text-lg font-semibold">
-                      {(product.price * (1 - product.discountPercentage / 100)).toFixed(2)} EUR
+                      {getDiscountedPrice(product.price, product.discountPercentage).toFixed(2)} EUR
                     </span>
                     <span className="text-sm text-muted-foreground line-through">
                       {product.price.toFixed(2)} EUR
@@ -271,9 +129,7 @@ export function ProductDetailPage() {
                     </span>
                   </>
                 ) : (
-                  <span className="text-lg font-semibold">
-                    {product.price.toFixed(2)} EUR
-                  </span>
+                  <span className="text-lg font-semibold">{product.price.toFixed(2)} EUR</span>
                 )}
               </div>
 
@@ -324,7 +180,11 @@ export function ProductDetailPage() {
                 {product.minimumOrderQuantity && product.minimumOrderQuantity > 1 ? (
                   <>
                     <dt className="text-muted-foreground">{t("productDetail.minOrder")}</dt>
-                    <dd>{t("productDetail.unitPcs", { value: String(product.minimumOrderQuantity) })}</dd>
+                    <dd>
+                      {t("productDetail.unitPcs", {
+                        value: String(product.minimumOrderQuantity),
+                      })}
+                    </dd>
                   </>
                 ) : null}
                 {product.warrantyInformation ? (
@@ -353,14 +213,14 @@ export function ProductDetailPage() {
                     quantity={cartQty}
                     minQuantity={moq}
                     disabled={isUpdatingCart || isBootstrappingCart}
-                    onDecrement={() => void handleChangeQty(cartQty - 1)}
-                    onIncrement={() => void handleChangeQty(cartQty + 1)}
-                    onRemove={() => void handleChangeQty(0)}
+                    onDecrement={() => void changeLineQuantity(productId, cartQty - 1)}
+                    onIncrement={() => void changeLineQuantity(productId, cartQty + 1)}
+                    onRemove={() => void changeLineQuantity(productId, 0)}
                   />
                 ) : (
                   <Button
                     disabled={isUpdatingCart || isBootstrappingCart}
-                    onClick={() => void handleAddToCart()}
+                    onClick={() => void addToCart(product)}
                   >
                     {t("productDetail.addToCart")}
                   </Button>

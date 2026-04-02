@@ -15,6 +15,7 @@ export const enUS = {
       login: "Login",
       guest: "Guest",
       cart: "Cart",
+      menu: "Menu",
     },
     drawer: {
       dashboard: "Dashboard",

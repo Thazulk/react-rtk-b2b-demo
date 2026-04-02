@@ -1,4 +1,4 @@
-import { ChevronDown, ShoppingCart, UserRound } from "lucide-react";
+import { ChevronDown, Menu, ShoppingCart, UserRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
@@ -13,6 +13,7 @@ interface AppNavbarProps {
   onProfile?: () => void;
   onLogout?: () => void;
   onLogin?: () => void;
+  onMenuToggle?: () => void;
 }
 
 export function AppNavbar({
@@ -24,6 +25,7 @@ export function AppNavbar({
   onProfile,
   onLogout,
   onLogin,
+  onMenuToggle,
 }: AppNavbarProps) {
   const { i18n, t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -47,17 +49,30 @@ export function AppNavbar({
   return (
     <header className="fixed inset-x-0 top-0 z-50 h-14 border-b bg-background/95 backdrop-blur">
       <div className="flex h-full w-full items-center justify-between px-4 sm:px-6">
-        {onTitleClick ? (
-          <Button
-            variant="ghost"
-            className="h-auto px-0 text-lg font-semibold tracking-tight hover:bg-transparent"
-            onClick={onTitleClick}
-          >
-            {title}
-          </Button>
-        ) : (
-          <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
-        )}
+        <div className="flex items-center gap-1">
+          {onMenuToggle ? (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="lg:hidden"
+              onClick={onMenuToggle}
+              aria-label={t("navbar.menu")}
+            >
+              <Menu aria-hidden="true" />
+            </Button>
+          ) : null}
+          {onTitleClick ? (
+            <Button
+              variant="ghost"
+              className="h-auto px-0 text-lg font-semibold tracking-tight hover:bg-transparent"
+              onClick={onTitleClick}
+            >
+              {title}
+            </Button>
+          ) : (
+            <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <Button
             size="icon-sm"

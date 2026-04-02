@@ -15,6 +15,7 @@ export const huHU = {
       login: "Bejelentkezés",
       guest: "Vendég",
       cart: "Kosár",
+      menu: "Menü",
     },
     drawer: {
       dashboard: "Dashboard",

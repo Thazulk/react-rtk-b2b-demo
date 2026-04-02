@@ -1,7 +1,11 @@
 import { clearSession } from "@/store/authSlice";
 import type { RootState } from "@/store/store";
 import type { CartProduct } from "@/types/dummyjson";
-import { createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 
 interface CartDraftLine {
   id: number;
@@ -181,9 +185,7 @@ export const selectUserDraftSubtotal = createSelector(
         .reduce(
           (sum, line) =>
             sum +
-            line.price *
-              line.quantity *
-              (1 - line.discountPercentage / 100),
+            line.price * line.quantity * (1 - line.discountPercentage / 100),
           0,
         )
         .toFixed(2),

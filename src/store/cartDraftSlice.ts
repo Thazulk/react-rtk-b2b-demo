@@ -1,6 +1,7 @@
+import { clearSession } from "@/store/authSlice";
 import type { RootState } from "@/store/store";
 import type { CartProduct } from "@/types/dummyjson";
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface CartDraftLine {
   id: number;
@@ -124,6 +125,9 @@ const cartDraftSlice = createSlice({
       state.byUserId[userKey] = current;
     },
   },
+  extraReducers: (builder) => {
+    builder.addCase(clearSession, () => initialState);
+  },
 });
 
 export const {
@@ -134,6 +138,10 @@ export const {
 
 export const cartDraftReducer = cartDraftSlice.reducer;
 
+const selectCartDraftState = (state: RootState) => state.cartDraft;
+
+const selectUserIdParam = (_state: RootState, userId?: number | null) => userId;
+
 export const selectUserDraft = (
   state: RootState,
   userId?: number | null,
@@ -143,6 +151,45 @@ export const selectUserDraft = (
   }
   return state.cartDraft.byUserId[String(userId)] ?? null;
 };
+
+/** Memoized: product id → quantity for catalog badges / quantity controls. */
+export const selectCartQuantitiesMap = createSelector(
+  [selectCartDraftState, selectUserIdParam],
+  (cartDraft, userId): Partial<Record<number, number>> => {
+    if (userId == null) {
+      return {};
+    }
+    const lines = cartDraft.byUserId[String(userId)]?.lines ?? [];
+    const map: Partial<Record<number, number>> = {};
+    for (const line of lines) {
+      map[line.id] = line.quantity;
+    }
+    return map;
+  },
+);
+
+/** Memoized: discounted line totals summed (matches B2B cart subtotal intent). */
+export const selectUserDraftSubtotal = createSelector(
+  [selectCartDraftState, selectUserIdParam],
+  (cartDraft, userId): number => {
+    if (userId == null) {
+      return 0;
+    }
+    const lines = cartDraft.byUserId[String(userId)]?.lines ?? [];
+    return Number(
+      lines
+        .reduce(
+          (sum, line) =>
+            sum +
+            line.price *
+              line.quantity *
+              (1 - line.discountPercentage / 100),
+          0,
+        )
+        .toFixed(2),
+    );
+  },
+);
 
 export const selectUserDraftItemTypesCount = (
   state: RootState,

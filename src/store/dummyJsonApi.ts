@@ -7,6 +7,8 @@ import type {
   CartProduct,
   LoginRequest,
   LoginResponse,
+  Product,
+  ProductCategory,
   ProductListResponse,
   UpdateCartRequest,
   User,
@@ -83,6 +85,34 @@ export const dummyJsonApi = createApi({
         params: params ?? {},
       }),
       providesTags: ["Products"],
+    }),
+    searchProducts: builder.query<
+      ProductListResponse,
+      { q: string; limit?: number; skip?: number }
+    >({
+      query: (params) => ({
+        url: "/products/search",
+        params,
+      }),
+      providesTags: ["Products"],
+    }),
+    getCategories: builder.query<ProductCategory[], void>({
+      query: () => "/products/categories",
+      providesTags: ["Products"],
+    }),
+    getProductsByCategory: builder.query<
+      ProductListResponse,
+      { category: string; limit?: number; skip?: number }
+    >({
+      query: ({ category, ...params }) => ({
+        url: `/products/category/${encodeURIComponent(category)}`,
+        params,
+      }),
+      providesTags: ["Products"],
+    }),
+    getProductById: builder.query<Product, number>({
+      query: (id) => `/products/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Products", id }],
     }),
     getCartsByUser: builder.query<CartListResponse, number>({
       query: (userId) => `/carts/user/${userId}`,
@@ -199,6 +229,10 @@ export const {
   useLoginMutation,
   useGetAuthMeQuery,
   useGetProductsQuery,
+  useSearchProductsQuery,
+  useGetCategoriesQuery,
+  useGetProductsByCategoryQuery,
+  useGetProductByIdQuery,
   useGetCartsByUserQuery,
   useGetCartByIdQuery,
   useUpdateCartMutation,

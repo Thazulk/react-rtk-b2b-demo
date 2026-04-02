@@ -1,17 +1,25 @@
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { CartManager } from "@/features/cart/components/CartManager";
 import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { selectActiveCartId, selectUser } from "@/store/authSlice";
-import { selectUserDraft, setDraftLineQuantity } from "@/store/cartDraftSlice";
+import {
+  selectUserDraft,
+  selectUserDraftSubtotal,
+  setDraftLineQuantity,
+} from "@/store/cartDraftSlice";
 import { useUpdateCartMutation } from "@/store/dummyJsonApi";
 
 export function CartPage() {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   const user = useAppSelector(selectUser);
   const activeCartId = useAppSelector(selectActiveCartId);
   const draft = useAppSelector((state) => selectUserDraft(state, user?.id));
-  const { activeCart } = useActiveCart({
+  const draftSubtotal = useAppSelector((state) => selectUserDraftSubtotal(state, user?.id));
+  const { activeCart, isBootstrappingCart } = useActiveCart({
     userId: user?.id,
     activeCartId,
   });
@@ -87,17 +95,21 @@ export function CartPage() {
         })),
       }).unwrap();
     } catch {
-      /* Draft is already updated; DummyJSON may not persist — keep local state. */
+      toast.error(t("errors.updateCartFailed"));
     }
   };
 
   return (
     <div className="flex min-h-0 w-full flex-1 flex-col">
       <CartManager
-      activeCartId={activeCartId}
-      lines={cartLines}
-      onChangeQuantity={(productId, nextQuantity) => void handleChangeQuantity(productId, nextQuantity)}
-    />
+        activeCartId={activeCartId}
+        lines={cartLines}
+        subtotal={draftSubtotal}
+        showLineSkeletons={Boolean(user) && isBootstrappingCart && cartLines.length === 0}
+        onChangeQuantity={(productId, nextQuantity) =>
+          void handleChangeQuantity(productId, nextQuantity)
+        }
+      />
     </div>
   );
 }

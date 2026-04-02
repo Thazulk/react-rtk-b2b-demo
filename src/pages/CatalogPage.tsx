@@ -1,52 +1,117 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
 import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
 import { ProductCatalog } from "@/features/catalog/components/ProductCatalog";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { selectActiveCartId, selectUser } from "@/store/authSlice";
 import {
   addOrIncrementDraftLine,
+  selectCartQuantitiesMap,
   selectUserDraft,
   setDraftLineQuantity,
 } from "@/store/cartDraftSlice";
-import { useGetProductsQuery, useUpdateCartMutation } from "@/store/dummyJsonApi";
+import {
+  useGetCategoriesQuery,
+  useGetProductsByCategoryQuery,
+  useGetProductsQuery,
+  useSearchProductsQuery,
+  useUpdateCartMutation,
+} from "@/store/dummyJsonApi";
+import type { ProductListResponse } from "@/types/dummyjson";
+
+const listSelectFromResult = {
+  selectFromResult: ({
+    data,
+    isLoading,
+    isError,
+  }: {
+    data?: ProductListResponse;
+    isLoading: boolean;
+    isError: boolean;
+  }) => ({
+    products: data?.products ?? [],
+    total: data?.total ?? 0,
+    isLoading,
+    isError,
+  }),
+};
 
 export function CatalogPage() {
   const pageSize = 12;
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [page, setPage] = useState(1);
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setDebouncedSearch(searchInput.trim()), 300);
+    return () => window.clearTimeout(t);
+  }, [searchInput]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, selectedCategory]);
 
   const user = useAppSelector(selectUser);
   const activeCartId = useAppSelector(selectActiveCartId);
   const draft = useAppSelector((state) => selectUserDraft(state, user?.id));
+  const cartQuantities = useAppSelector((state) => selectCartQuantitiesMap(state, user?.id));
   const [updateCart, { isLoading: isUpdatingCart }] = useUpdateCartMutation();
   const { activeCart, isBootstrappingCart } = useActiveCart({
     userId: user?.id,
     activeCartId,
   });
 
-  const { data: productsData, isLoading: isProductsLoading } = useGetProductsQuery({
-    limit: pageSize,
-    skip: (page - 1) * pageSize,
-  });
-  const totalPages = useMemo(
-    () => Math.max(1, Math.ceil((productsData?.total ?? pageSize) / pageSize)),
-    [pageSize, productsData?.total],
+  const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
+
+  const skipCategory = !selectedCategory;
+  const skipSearch = Boolean(selectedCategory) || debouncedSearch.length === 0;
+  const skipList = Boolean(selectedCategory) || debouncedSearch.length > 0;
+
+  const categoryQuery = useGetProductsByCategoryQuery(
+    {
+      category: selectedCategory ?? "",
+      limit: pageSize,
+      skip: (page - 1) * pageSize,
+    },
+    { skip: skipCategory, ...listSelectFromResult },
   );
 
-  const cartQuantities = useMemo(() => {
-    const map: Partial<Record<number, number>> = {};
-    for (const line of draft?.lines ?? []) {
-      map[line.id] = line.quantity;
-    }
-    return map;
-  }, [draft?.lines]);
+  const searchQuery = useSearchProductsQuery(
+    {
+      q: debouncedSearch,
+      limit: pageSize,
+      skip: (page - 1) * pageSize,
+    },
+    { skip: skipSearch, ...listSelectFromResult },
+  );
+
+  const listQuery = useGetProductsQuery(
+    { limit: pageSize, skip: (page - 1) * pageSize },
+    { skip: skipList, ...listSelectFromResult },
+  );
+
+  const active = selectedCategory
+    ? categoryQuery
+    : debouncedSearch.length > 0
+      ? searchQuery
+      : listQuery;
+
+  const { products, total, isLoading: isProductsLoading, isError: isProductsError } = active;
+
+  const totalPages = Math.max(1, Math.ceil((total || pageSize) / pageSize));
 
   const handleAddToCart = async (productId: number) => {
-    if (!user || !productsData) {
+    if (!user) {
       return;
     }
 
-    const selectedProduct = productsData.products.find((product) => product.id === productId);
+    const selectedProduct = products.find((product) => product.id === productId);
     if (!selectedProduct) {
       return;
     }
@@ -113,7 +178,7 @@ export function CatalogPage() {
           })),
         }).unwrap();
       } catch {
-        /* keep draft; API may not persist */
+        toast.error(t("errors.updateCartFailed"));
       }
     }
   };
@@ -172,25 +237,37 @@ export function CatalogPage() {
         })),
       }).unwrap();
     } catch {
-      /* keep draft */
+      toast.error(t("errors.updateCartFailed"));
     }
   };
+
+  const showListSkeleton = isProductsLoading || categoriesLoading;
 
   return (
     <div className="flex h-full max-h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
       <ProductCatalog
         canManageCart={Boolean(user)}
-        isLoading={isProductsLoading || isBootstrappingCart || isUpdatingCart}
+        isLoading={isProductsLoading || isBootstrappingCart || isUpdatingCart || categoriesLoading}
+        showListSkeleton={showListSkeleton}
+        skeletonRowCount={pageSize}
+        isError={isProductsError}
+        searchInput={searchInput}
+        onSearchChange={setSearchInput}
+        categories={categories}
+        categoriesLoading={categoriesLoading}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
         currentPage={page}
         totalPages={totalPages}
         onPrevPage={page > 1 ? () => setPage((prev) => prev - 1) : undefined}
         onNextPage={page < totalPages ? () => setPage((prev) => prev + 1) : undefined}
-        products={productsData?.products ?? []}
+        products={products}
         cartQuantities={user ? cartQuantities : undefined}
         onChangeCartQuantity={
           user ? (productId, next) => void handleChangeLineQuantity(productId, next) : undefined
         }
         onAddToCart={(product) => void handleAddToCart(product.id)}
+        onProductNavigate={(product) => navigate(`/catalog/${product.id}`)}
       />
     </div>
   );

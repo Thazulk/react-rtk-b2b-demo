@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -54,6 +55,7 @@ export function LoginForm() {
       navigate("/dashboard", { replace: true });
     } catch {
       setError(t("login.requestFailed"));
+      toast.error(t("errors.loginFailed"));
     }
   };
 

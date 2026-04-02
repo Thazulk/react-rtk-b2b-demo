@@ -1,6 +1,21 @@
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CartLineQuantityControls } from "@/features/cart/components/CartLineQuantityControls";
+
+const CART_LINE_SKELETON_COUNT = 4;
+
+function CartLineSkeleton() {
+  return (
+    <div className="flex items-center justify-between rounded-lg border p-3">
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-4 w-48" />
+        <Skeleton className="h-3 w-32" />
+      </div>
+      <Skeleton className="h-8 w-24 shrink-0" />
+    </div>
+  );
+}
 
 export interface CartLineView {
   product: {
@@ -14,12 +29,24 @@ export interface CartLineView {
 interface CartManagerProps {
   activeCartId: number | null;
   lines: CartLineView[];
+  /** From memoized selector (discounted subtotal); falls back to sum of line price × qty. */
+  subtotal?: number;
+  /** Placeholder rows while the active cart is loading and lines are not yet known. */
+  showLineSkeletons?: boolean;
   onChangeQuantity: (productId: number, nextQuantity: number) => void;
 }
 
-export function CartManager({ activeCartId, lines, onChangeQuantity }: CartManagerProps) {
+export function CartManager({
+  activeCartId,
+  lines,
+  subtotal: subtotalProp,
+  showLineSkeletons = false,
+  onChangeQuantity,
+}: CartManagerProps) {
   const { t } = useTranslation();
-  const subtotal = lines.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
+  const subtotal =
+    subtotalProp ??
+    lines.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
 
   return (
     <Card className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
@@ -30,7 +57,9 @@ export function CartManager({ activeCartId, lines, onChangeQuantity }: CartManag
       <CardContent className="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden p-0">
         <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-2">
           <div className="flex flex-col gap-3">
-            {lines.length === 0 ? (
+            {showLineSkeletons ? (
+              Array.from({ length: CART_LINE_SKELETON_COUNT }, (_, i) => <CartLineSkeleton key={i} />)
+            ) : lines.length === 0 ? (
               <p className="text-sm text-muted-foreground">{t("cart.empty")}</p>
             ) : (
               lines.map((line) => (

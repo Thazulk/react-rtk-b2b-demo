@@ -129,6 +129,13 @@ export interface ProductListResponse extends PaginationMeta {
   products: Product[];
 }
 
+/** DummyJSON `GET /products/categories` item */
+export interface ProductCategory {
+  slug: string;
+  name: string;
+  url: string;
+}
+
 export interface CartListResponse extends PaginationMeta {
   carts: Cart[];
 }

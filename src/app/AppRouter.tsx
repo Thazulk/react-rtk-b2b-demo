@@ -5,6 +5,7 @@ import {
   CatalogPage,
   DashboardPage,
   LoginPage,
+  ProductDetailPage,
   ProfilePage,
 } from "@/pages";
 
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Navigate to="/login" replace />,
+      },
+      {
+        path: "catalog/:productId",
+        element: <ProductDetailPage />,
       },
       {
         path: "catalog",

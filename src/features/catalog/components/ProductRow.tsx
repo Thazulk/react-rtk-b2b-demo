@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { CartItemQuantityControls } from "@/features/cart/components/CartItemQuantityControls";
 import { AvailabilityBadge } from "@/features/catalog/components/AvailabilityBadge";
-import { getDiscountedPrice } from "@/features/catalog/utils/price";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/dummyjson";
 
@@ -28,7 +27,7 @@ export function ProductRow({
 }: ProductRowProps) {
   const { t } = useTranslation();
   const hasDiscount = product.discountPercentage > 0;
-  const discountedPrice = getDiscountedPrice(product.price, product.discountPercentage);
+  const discountedPrice = product.price * (1 - product.discountPercentage / 100);
 
   return (
     <div

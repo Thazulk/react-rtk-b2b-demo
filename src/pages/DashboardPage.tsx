@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
 import { useAppSelector } from "@/store";
-import { selectActiveCartId, selectUser } from "@/store/authSlice";
+import { selectUser } from "@/store/authSlice";
 import { selectUserDraftItemTypesCount } from "@/store/cartDraftSlice";
 
 export function DashboardPage() {
@@ -12,15 +12,10 @@ export function DashboardPage() {
   const { t } = useTranslation();
 
   const user = useAppSelector(selectUser);
-  const activeCartId = useAppSelector(selectActiveCartId);
   const draftItemTypesCount = useAppSelector((state) => selectUserDraftItemTypesCount(state, user?.id));
-  const { cartItemTypesCount } = useActiveCart({
-    userId: user?.id,
-    activeCartId,
-  });
+  const { cartItemTypesCount } = useActiveCart(user?.id);
 
-  const displayedCartItemTypesCount = draftItemTypesCount || cartItemTypesCount;
-  const hasCartContent = displayedCartItemTypesCount > 0;
+  const hasCartContent = (draftItemTypesCount || cartItemTypesCount) > 0;
 
   return (
     <Card className="w-full min-h-0 flex-1 overflow-y-auto">

@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
   useGetCategoriesQuery,
   useGetProductsByCategoryQuery,
@@ -6,6 +5,7 @@ import {
   useSearchProductsQuery,
 } from "@/store/dummyJsonApi";
 import type { ProductListResponse } from "@/types/dummyjson";
+import { useEffect, useState } from "react";
 
 const PAGE_SIZE = 12;
 
@@ -33,22 +33,26 @@ export function useCatalogFilters() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setDebouncedSearch(searchInput.trim()), 300);
+    const timer = window.setTimeout(
+      () => setDebouncedSearch(searchInput.trim()),
+      300,
+    );
     return () => window.clearTimeout(timer);
   }, [searchInput]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, selectedCategory]);
-
-  const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
+  const { data: categories = [], isLoading: categoriesLoading } =
+    useGetCategoriesQuery();
 
   const skipCategory = !selectedCategory;
   const skipSearch = Boolean(selectedCategory) || debouncedSearch.length === 0;
   const skipList = Boolean(selectedCategory) || debouncedSearch.length > 0;
 
   const categoryQuery = useGetProductsByCategoryQuery(
-    { category: selectedCategory ?? "", limit: PAGE_SIZE, skip: (page - 1) * PAGE_SIZE },
+    {
+      category: selectedCategory ?? "",
+      limit: PAGE_SIZE,
+      skip: (page - 1) * PAGE_SIZE,
+    },
     { skip: skipCategory, ...listSelectFromResult },
   );
 
@@ -68,7 +72,12 @@ export function useCatalogFilters() {
       ? searchQuery
       : listQuery;
 
-  const { products, total, isLoading: isProductsLoading, isError: isProductsError } = active;
+  const {
+    products,
+    total,
+    isLoading: isProductsLoading,
+    isError: isProductsError,
+  } = active;
   const totalPages = Math.max(1, Math.ceil((total || PAGE_SIZE) / PAGE_SIZE));
   const showListSkeleton = isProductsLoading || categoriesLoading;
 

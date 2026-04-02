@@ -6,9 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { CartItemQuantityControls } from "@/features/cart/components/CartItemQuantityControls";
 import { useCartActions } from "@/features/cart/hooks/use-cart-actions";
-import { getDiscountedPrice } from "@/features/catalog/utils/price";
-import { getAvailabilityColorClass } from "@/features/catalog/utils/availability";
-import { cn } from "@/lib/utils";
+import { AvailabilityBadge } from "@/features/catalog/components/AvailabilityBadge";
 import { useGetProductByIdQuery } from "@/store/dummyJsonApi";
 
 export function ProductDetailPage() {
@@ -79,14 +77,7 @@ export function ProductDetailPage() {
             <CardTitle className="flex flex-wrap items-center gap-2">
               <span>{product.title}</span>
               {product.availabilityStatus ? (
-                <span
-                  className={cn(
-                    "rounded-full px-2 py-0.5 text-xs font-medium",
-                    getAvailabilityColorClass(product.availabilityStatus),
-                  )}
-                >
-                  {product.availabilityStatus}
-                </span>
+                <AvailabilityBadge status={product.availabilityStatus} className="px-2 py-0.5 text-xs" />
               ) : null}
             </CardTitle>
             <CardDescription className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -119,7 +110,7 @@ export function ProductDetailPage() {
                 {hasDiscount ? (
                   <>
                     <span className="text-lg font-semibold">
-                      {getDiscountedPrice(product.price, product.discountPercentage).toFixed(2)} EUR
+                      {(product.price * (1 - product.discountPercentage / 100)).toFixed(2)} EUR
                     </span>
                     <span className="text-sm text-muted-foreground line-through">
                       {product.price.toFixed(2)} EUR

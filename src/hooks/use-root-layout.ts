@@ -1,10 +1,6 @@
 import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
 import { persistor, useAppDispatch, useAppSelector } from "@/store";
-import {
-  clearSession,
-  selectActiveCartId,
-  selectUser,
-} from "@/store/authSlice";
+import { clearSession, selectUser } from "@/store/authSlice";
 import { selectUserDraftItemTypesCount } from "@/store/cartDraftSlice";
 import { useCallback, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
@@ -16,14 +12,10 @@ export function useRootLayout() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   const user = useAppSelector(selectUser);
-  const activeCartId = useAppSelector(selectActiveCartId);
   const draftItemTypesCount = useAppSelector((state) =>
     selectUserDraftItemTypesCount(state, user?.id),
   );
-  const { cartItemTypesCount } = useActiveCart({
-    userId: user?.id,
-    activeCartId,
-  });
+  const { cartItemTypesCount } = useActiveCart(user?.id);
 
   const isLoginRoute = location.pathname === "/login";
   const cartBadgeCount = draftItemTypesCount || cartItemTypesCount;

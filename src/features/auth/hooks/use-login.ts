@@ -35,7 +35,6 @@ export function useLogin() {
       dispatch(
         setSession({
           accessToken: response.accessToken,
-          activeCartId: null,
           user: {
             id: response.id,
             firstName: response.firstName,

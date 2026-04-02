@@ -1,78 +1,33 @@
 import { useAppDispatch } from "@/store";
-import { setActiveCartId } from "@/store/authSlice";
 import { hydrateUserCartFromApi } from "@/store/cartDraftSlice";
-import {
-  useGetCartByIdQuery,
-  useGetCartsByUserQuery,
-} from "@/store/dummyJsonApi";
+import { useGetCartsByUserQuery } from "@/store/dummyJsonApi";
 import { useEffect } from "react";
 
-interface UseActiveCartParams {
-  userId?: number;
-  activeCartId: number | null;
-}
-
-export function useActiveCart({ userId, activeCartId }: UseActiveCartParams) {
+export function useActiveCart(userId?: number) {
   const dispatch = useAppDispatch();
 
-  const { data: userCarts, isFetching: isCartsFetching } =
-    useGetCartsByUserQuery(userId ?? 0, {
-      skip: !userId,
-    });
-
-  const {
-    data: activeCart,
-    error: activeCartError,
-    isFetching: isActiveCartFetching,
-  } = useGetCartByIdQuery(activeCartId ?? 0, {
-    skip: !activeCartId,
+  const { data: userCarts, isFetching } = useGetCartsByUserQuery(userId ?? 0, {
+    skip: !userId,
   });
 
-  useEffect(() => {
-    if (!userId || !userCarts) {
-      return;
-    }
-
-    if (activeCartId) {
-      return;
-    }
-
-    if (userCarts.carts.length > 0) {
-      dispatch(setActiveCartId(userCarts.carts[0].id));
-      return;
-    }
-    dispatch(setActiveCartId(null));
-  }, [activeCartId, dispatch, userCarts, userId]);
+  const cart = userCarts?.carts[0] ?? null;
+  const cartId = cart?.id ?? null;
 
   useEffect(() => {
-    const isNotFound =
-      typeof activeCartError === "object" &&
-      activeCartError !== null &&
-      "status" in activeCartError &&
-      activeCartError.status === 404;
-
-    if (isNotFound && userId) {
-      dispatch(setActiveCartId(null));
-    }
-  }, [activeCartError, dispatch, userId]);
-
-  useEffect(() => {
-    if (!userId || !activeCart) {
-      return;
-    }
+    if (!userId || !cart) return;
     dispatch(
       hydrateUserCartFromApi({
         userId,
-        cartId: activeCart.id,
-        products: activeCart.products,
+        cartId: cart.id,
+        products: cart.products,
       }),
     );
-  }, [activeCart, dispatch, userId]);
+  }, [cart, dispatch, userId]);
 
   return {
-    activeCartId,
-    activeCart,
-    cartItemTypesCount: activeCart?.products.length ?? 0,
-    isBootstrappingCart: isCartsFetching || isActiveCartFetching,
+    cartId,
+    cart,
+    cartItemTypesCount: cart?.products.length ?? 0,
+    isBootstrappingCart: isFetching,
   };
 }

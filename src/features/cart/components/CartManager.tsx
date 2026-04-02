@@ -1,13 +1,30 @@
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CartItemRow } from "@/features/cart/components/CartItemRow";
-import { CartItemSkeleton } from "@/features/cart/components/CartItemSkeleton";
-import type { CartItemView } from "@/features/cart/types/cart-item-view";
 
 const CART_ITEM_SKELETON_COUNT = 4;
 
+export interface CartItemView {
+  product: { id: number; title: string; price: number };
+  quantity: number;
+  minimumOrderQuantity: number;
+}
+
+function CartItemSkeleton() {
+  return (
+    <div className="flex items-center justify-between rounded-lg border p-3">
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-4 w-48" />
+        <Skeleton className="h-3 w-32" />
+      </div>
+      <Skeleton className="h-8 w-24 shrink-0" />
+    </div>
+  );
+}
+
 interface CartManagerProps {
-  activeCartId: number | null;
+  cartId: number | null;
   items: CartItemView[];
   subtotal?: number;
   showItemSkeletons?: boolean;
@@ -15,7 +32,7 @@ interface CartManagerProps {
 }
 
 export function CartManager({
-  activeCartId,
+  cartId,
   items,
   subtotal: subtotalProp,
   showItemSkeletons = false,
@@ -30,7 +47,7 @@ export function CartManager({
     <Card className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
       <CardHeader className="shrink-0">
         <CardTitle>{t("cart.title")}</CardTitle>
-        <CardDescription>{t("cart.cartId", { id: String(activeCartId ?? "n/a") })}</CardDescription>
+        <CardDescription>{t("cart.cartId", { id: String(cartId ?? "n/a") })}</CardDescription>
       </CardHeader>
       <CardContent className="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden p-0">
         <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-2">

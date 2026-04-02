@@ -27,7 +27,7 @@ const authStorage = isServer ? noopStorage : createWebStorage("session");
 const authPersistConfig = {
   key: "auth",
   storage: authStorage,
-  whitelist: ["accessToken", "user", "activeCartId"],
+  whitelist: ["accessToken", "user"],
 };
 
 const cartDraftPersistConfig = {

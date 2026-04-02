@@ -1,6 +1,6 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { describe, expect, it } from "vitest";
-import { authReducer, clearSession, setActiveCartId, setSession } from "@/store/authSlice";
+import { authReducer, clearSession, setSession } from "@/store/authSlice";
 import { cartDraftReducer } from "@/store/cartDraftSlice";
 
 const testUser = {
@@ -23,33 +23,18 @@ function createStore() {
 }
 
 describe("authSlice", () => {
-  it("setSession stores token, user, and optional cart id", () => {
+  it("setSession stores token and user", () => {
     const store = createStore();
     store.dispatch(
       setSession({
         accessToken: "tok",
         user: testUser,
-        activeCartId: 42,
       }),
     );
     expect(store.getState().auth).toMatchObject({
       accessToken: "tok",
       user: testUser,
-      activeCartId: 42,
     });
-  });
-
-  it("setActiveCartId updates only the active cart", () => {
-    const store = createStore();
-    store.dispatch(
-      setSession({
-        accessToken: "tok",
-        user: testUser,
-      }),
-    );
-    store.dispatch(setActiveCartId(7));
-    expect(store.getState().auth.activeCartId).toBe(7);
-    expect(store.getState().auth.accessToken).toBe("tok");
   });
 
   it("clearSession resets auth and cart draft", () => {
@@ -58,14 +43,12 @@ describe("authSlice", () => {
       setSession({
         accessToken: "tok",
         user: testUser,
-        activeCartId: 1,
       }),
     );
     store.dispatch(clearSession());
     expect(store.getState().auth).toEqual({
       accessToken: null,
       user: null,
-      activeCartId: null,
     });
     expect(store.getState().cartDraft.byUserId).toEqual({});
   });

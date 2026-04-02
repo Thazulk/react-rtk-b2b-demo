@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Navigate, Outlet } from "react-router";
 import {
   selectAccessToken,
-  selectActiveCartId,
   selectIsAuthenticated,
   selectUser,
   setSession,
@@ -15,7 +14,6 @@ export function ProtectedLayout() {
   const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const accessToken = useAppSelector(selectAccessToken);
-  const activeCartId = useAppSelector(selectActiveCartId);
   const user = useAppSelector(selectUser);
   const { data: authMe, isFetching } = useGetAuthMeQuery(undefined, {
     skip: !accessToken,
@@ -31,11 +29,10 @@ export function ProtectedLayout() {
         setSession({
           accessToken,
           user: authMe,
-          activeCartId,
         }),
       );
     }
-  }, [accessToken, activeCartId, authMe, dispatch, user]);
+  }, [accessToken, authMe, dispatch, user]);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

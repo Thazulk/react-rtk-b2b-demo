@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { CartItemQuantityControls } from "@/features/cart/components/CartItemQuantityControls";
-import type { CartItemView } from "@/features/cart/types/cart-item-view";
+import type { CartItemView } from "@/features/cart/components/CartManager";
 
 interface CartItemRowProps {
   item: CartItemView;

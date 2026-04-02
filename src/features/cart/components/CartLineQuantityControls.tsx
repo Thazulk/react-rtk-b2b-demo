@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 
 interface CartLineQuantityControlsProps {
   quantity: number;
+  /** Minimum allowed quantity; decrement is disabled at this floor. Defaults to 1. */
+  minQuantity?: number;
   disabled?: boolean;
   onDecrement: () => void;
   onIncrement: () => void;
@@ -12,16 +14,18 @@ interface CartLineQuantityControlsProps {
 
 export function CartLineQuantityControls({
   quantity,
+  minQuantity = 1,
   disabled = false,
   onDecrement,
   onIncrement,
   onRemove,
 }: CartLineQuantityControlsProps) {
   const { t } = useTranslation();
+  const atFloor = quantity <= minQuantity;
 
   return (
     <div className="flex items-center gap-2">
-      <Button size="icon-sm" variant="outline" disabled={disabled} onClick={onDecrement}>
+      <Button size="icon-sm" variant="outline" disabled={disabled || atFloor} onClick={onDecrement}>
         -
       </Button>
       <span className="w-7 text-center text-sm">{quantity}</span>

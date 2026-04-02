@@ -24,6 +24,7 @@ export interface CartLineView {
     price: number;
   };
   quantity: number;
+  minimumOrderQuantity: number;
 }
 
 interface CartManagerProps {
@@ -75,6 +76,7 @@ export function CartManager({
                   </div>
                   <CartLineQuantityControls
                     quantity={line.quantity}
+                    minQuantity={line.minimumOrderQuantity}
                     onDecrement={() => onChangeQuantity(line.product.id, line.quantity - 1)}
                     onIncrement={() => onChangeQuantity(line.product.id, line.quantity + 1)}
                     onRemove={() => onChangeQuantity(line.product.id, 0)}

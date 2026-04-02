@@ -34,6 +34,7 @@ export function CartPage() {
       quantity: product.quantity,
       thumbnail: product.thumbnail,
       discountPercentage: product.discountPercentage,
+      minimumOrderQuantity: 1,
     })) ??
     [];
 
@@ -44,6 +45,7 @@ export function CartPage() {
       price: line.price,
     },
     quantity: line.quantity,
+    minimumOrderQuantity: line.minimumOrderQuantity,
   }));
 
   const handleChangeQuantity = async (productId: number, nextQuantity: number) => {

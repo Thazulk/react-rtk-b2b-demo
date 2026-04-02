@@ -1,3 +1,4 @@
+import { Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,15 +15,41 @@ function ProductRowSkeleton() {
   return (
     <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
       <div className="flex min-w-0 items-center gap-3">
-        <Skeleton className="size-14 shrink-0 rounded-md" />
+        <Skeleton className="size-16 shrink-0 rounded-md" />
         <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <Skeleton className="h-4 w-3/5 max-w-xs" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-3/5 max-w-xs" />
+            <Skeleton className="h-4 w-16 rounded-full" />
+          </div>
           <Skeleton className="h-3 w-full max-w-md" />
-          <Skeleton className="h-3 w-32" />
+          <div className="flex gap-2">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+          <div className="flex gap-1">
+            <Skeleton className="h-4 w-12 rounded-full" />
+            <Skeleton className="h-4 w-14 rounded-full" />
+          </div>
         </div>
       </div>
       <Skeleton className="h-8 w-24 shrink-0" />
     </div>
+  );
+}
+
+function AvailabilityBadge({ status }: { status: string }) {
+  const colorClass =
+    status === "In Stock"
+      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+      : status === "Low Stock"
+        ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
+        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+
+  return (
+    <span className={cn("inline-flex rounded-full px-1.5 py-0.5 text-[10px] font-medium leading-none", colorClass)}>
+      {status}
+    </span>
   );
 }
 
@@ -167,18 +194,76 @@ export function ProductCatalog({
                     <img
                       src={product.thumbnail}
                       alt={product.title}
-                      className="size-14 shrink-0 rounded-md border object-cover"
+                      className="size-16 shrink-0 rounded-md border object-cover"
                       loading="lazy"
                     />
                     <div className="flex min-w-0 flex-col gap-1">
-                      <p className="font-medium">{product.title}</p>
-                      <p className="line-clamp-2 text-xs text-muted-foreground">{product.description}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {t("catalog.stockAndPrice", {
-                          stock: String(product.stock),
-                          price: product.price.toFixed(2),
-                        })}
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                        <p className="font-medium">{product.title}</p>
+                        {product.brand ? (
+                          <span className="text-[11px] text-muted-foreground">
+                            {product.brand}
+                          </span>
+                        ) : null}
+                        {product.availabilityStatus ? (
+                          <AvailabilityBadge status={product.availabilityStatus} />
+                        ) : null}
+                      </div>
+
+                      <p className="line-clamp-1 text-xs text-muted-foreground">
+                        {product.description}
                       </p>
+
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
+                        <span className="flex items-center gap-1 font-semibold">
+                          {product.discountPercentage > 0 ? (
+                            <>
+                              <span className="text-foreground">
+                                {(product.price * (1 - product.discountPercentage / 100)).toFixed(2)} EUR
+                              </span>
+                              <span className="font-normal text-muted-foreground line-through">
+                                {product.price.toFixed(2)}
+                              </span>
+                              <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium leading-none text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                {t("catalog.discountBadge", { percent: String(product.discountPercentage) })}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-foreground">{product.price.toFixed(2)} EUR</span>
+                          )}
+                        </span>
+
+                        <span className="flex items-center gap-0.5 text-muted-foreground">
+                          <Star className="size-3 fill-amber-400 text-amber-400" aria-hidden="true" />
+                          {t("catalog.ratingLabel", { rating: String(product.rating) })}
+                        </span>
+
+                        <span className="text-muted-foreground">
+                          {t("catalog.stockAndPrice", {
+                            stock: String(product.stock),
+                            price: product.price.toFixed(2),
+                          }).split("|")[0].trim()}
+                        </span>
+
+                        {product.minimumOrderQuantity && product.minimumOrderQuantity > 1 ? (
+                          <span className="text-muted-foreground">
+                            {t("catalog.minOrder", { qty: String(product.minimumOrderQuantity) })}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      {product.tags.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {product.tags.slice(0, 3).map((tag) => (
+                            <span
+                              key={tag}
+                              className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] leading-none text-muted-foreground"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                   <div
@@ -189,6 +274,7 @@ export function ProductCatalog({
                     {canManageCart && inCartQty > 0 && onChangeCartQuantity ? (
                       <CartLineQuantityControls
                         quantity={inCartQty}
+                        minQuantity={product.minimumOrderQuantity ?? 1}
                         disabled={isLoading}
                         onDecrement={() => onChangeCartQuantity(product.id, inCartQty - 1)}
                         onIncrement={() => onChangeCartQuantity(product.id, inCartQty + 1)}

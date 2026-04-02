@@ -116,6 +116,8 @@ export function CatalogPage() {
       return;
     }
 
+    const moq = selectedProduct.minimumOrderQuantity ?? 1;
+
     dispatch(
       addOrIncrementDraftLine({
         userId: user.id,
@@ -125,6 +127,7 @@ export function CatalogPage() {
           price: selectedProduct.price,
           thumbnail: selectedProduct.thumbnail,
           discountPercentage: selectedProduct.discountPercentage,
+          minimumOrderQuantity: moq,
         },
       }),
     );
@@ -142,6 +145,7 @@ export function CatalogPage() {
       [];
 
     const existingLine = previousLines.find((line) => line.id === productId);
+    const initialQty = Math.max(1, moq);
     const nextLines = existingLine
       ? previousLines.map((line) =>
           line.id === productId ? { ...line, quantity: line.quantity + 1 } : line,
@@ -152,7 +156,7 @@ export function CatalogPage() {
             id: selectedProduct.id,
             title: selectedProduct.title,
             price: selectedProduct.price,
-            quantity: 1,
+            quantity: initialQty,
             thumbnail: selectedProduct.thumbnail,
             discountPercentage: selectedProduct.discountPercentage,
           },

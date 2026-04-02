@@ -14,6 +14,7 @@ interface CartDraftLine {
   quantity: number;
   thumbnail: string;
   discountPercentage: number;
+  minimumOrderQuantity: number;
 }
 
 interface UserCartDraft {
@@ -63,6 +64,7 @@ const cartDraftSlice = createSlice({
           quantity: product.quantity,
           thumbnail: product.thumbnail,
           discountPercentage: product.discountPercentage,
+          minimumOrderQuantity: 1,
         })),
         suppressApiHydrate: true,
       };
@@ -77,6 +79,7 @@ const cartDraftSlice = createSlice({
           price: number;
           thumbnail: string;
           discountPercentage: number;
+          minimumOrderQuantity?: number;
         };
       }>,
     ) => {
@@ -85,6 +88,7 @@ const cartDraftSlice = createSlice({
         cartId: null,
         lines: [],
       };
+      const moq = action.payload.product.minimumOrderQuantity ?? 1;
       const line = current.lines.find(
         (entry) => entry.id === action.payload.product.id,
       );
@@ -94,9 +98,10 @@ const cartDraftSlice = createSlice({
           id: action.payload.product.id,
           title: action.payload.product.title,
           price: action.payload.product.price,
-          quantity: 1,
+          quantity: Math.max(1, moq),
           thumbnail: action.payload.product.thumbnail,
           discountPercentage: action.payload.product.discountPercentage,
+          minimumOrderQuantity: moq,
         });
       } else {
         line.quantity += 1;

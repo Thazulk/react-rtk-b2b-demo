@@ -7,7 +7,7 @@ import {
   type PayloadAction,
 } from "@reduxjs/toolkit";
 
-interface CartDraftLine {
+interface CartDraftItem {
   id: number;
   title: string;
   price: number;
@@ -19,7 +19,7 @@ interface CartDraftLine {
 
 interface UserCartDraft {
   cartId: number | null;
-  lines: CartDraftLine[];
+  items: CartDraftItem[];
   /** After first API seed or any local edit, do not replace draft from getCart again. */
   suppressApiHydrate?: boolean;
 }
@@ -51,13 +51,13 @@ const cartDraftSlice = createSlice({
         return;
       }
 
-      if (existing && existing.lines.length > 0) {
+      if (existing && existing.items.length > 0) {
         return;
       }
 
       state.byUserId[userKey] = {
         cartId: action.payload.cartId,
-        lines: action.payload.products.map((product) => ({
+        items: action.payload.products.map((product) => ({
           id: product.id,
           title: product.title,
           price: product.price,
@@ -69,7 +69,7 @@ const cartDraftSlice = createSlice({
         suppressApiHydrate: true,
       };
     },
-    addOrIncrementDraftLine: (
+    addOrIncrementDraftItem: (
       state,
       action: PayloadAction<{
         userId: number;
@@ -86,15 +86,15 @@ const cartDraftSlice = createSlice({
       const userKey = String(action.payload.userId);
       const current = state.byUserId[userKey] ?? {
         cartId: null,
-        lines: [],
+        items: [],
       };
       const moq = action.payload.product.minimumOrderQuantity ?? 1;
-      const line = current.lines.find(
+      const item = current.items.find(
         (entry) => entry.id === action.payload.product.id,
       );
 
-      if (!line) {
-        current.lines.push({
+      if (!item) {
+        current.items.push({
           id: action.payload.product.id,
           title: action.payload.product.title,
           price: action.payload.product.price,
@@ -104,13 +104,13 @@ const cartDraftSlice = createSlice({
           minimumOrderQuantity: moq,
         });
       } else {
-        line.quantity += 1;
+        item.quantity += 1;
       }
 
       current.suppressApiHydrate = true;
       state.byUserId[userKey] = current;
     },
-    setDraftLineQuantity: (
+    setDraftItemQuantity: (
       state,
       action: PayloadAction<{
         userId: number;
@@ -121,15 +121,15 @@ const cartDraftSlice = createSlice({
       const userKey = String(action.payload.userId);
       const current = state.byUserId[userKey] ?? {
         cartId: null,
-        lines: [],
+        items: [],
       };
-      current.lines = current.lines
-        .map((line) =>
-          line.id === action.payload.productId
-            ? { ...line, quantity: action.payload.quantity }
-            : line,
+      current.items = current.items
+        .map((item) =>
+          item.id === action.payload.productId
+            ? { ...item, quantity: action.payload.quantity }
+            : item,
         )
-        .filter((line) => line.quantity > 0);
+        .filter((item) => item.quantity > 0);
       current.suppressApiHydrate = true;
       state.byUserId[userKey] = current;
     },
@@ -141,8 +141,8 @@ const cartDraftSlice = createSlice({
 
 export const {
   hydrateUserCartFromApi,
-  addOrIncrementDraftLine,
-  setDraftLineQuantity,
+  addOrIncrementDraftItem,
+  setDraftItemQuantity,
 } = cartDraftSlice.actions;
 
 export const cartDraftReducer = cartDraftSlice.reducer;
@@ -168,29 +168,29 @@ export const selectCartQuantitiesMap = createSelector(
     if (userId == null) {
       return {};
     }
-    const lines = cartDraft.byUserId[String(userId)]?.lines ?? [];
+    const items = cartDraft.byUserId[String(userId)]?.items ?? [];
     const map: Partial<Record<number, number>> = {};
-    for (const line of lines) {
-      map[line.id] = line.quantity;
+    for (const item of items) {
+      map[item.id] = item.quantity;
     }
     return map;
   },
 );
 
-/** Memoized: discounted line totals summed (matches B2B cart subtotal intent). */
+/** Memoized: discounted item totals summed (matches B2B cart subtotal intent). */
 export const selectUserDraftSubtotal = createSelector(
   [selectCartDraftState, selectUserIdParam],
   (cartDraft, userId): number => {
     if (userId == null) {
       return 0;
     }
-    const lines = cartDraft.byUserId[String(userId)]?.lines ?? [];
+    const items = cartDraft.byUserId[String(userId)]?.items ?? [];
     return Number(
-      lines
+      items
         .reduce(
-          (sum, line) =>
+          (sum, item) =>
             sum +
-            line.price * line.quantity * (1 - line.discountPercentage / 100),
+            item.price * item.quantity * (1 - item.discountPercentage / 100),
           0,
         )
         .toFixed(2),
@@ -202,5 +202,5 @@ export const selectUserDraftItemTypesCount = (
   state: RootState,
   userId?: number | null,
 ): number => {
-  return selectUserDraft(state, userId)?.lines.length ?? 0;
+  return selectUserDraft(state, userId)?.items.length ?? 0;
 };

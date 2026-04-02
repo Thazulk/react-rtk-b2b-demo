@@ -1,7 +1,7 @@
 import { Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { CartLineQuantityControls } from "@/features/cart/components/CartLineQuantityControls";
+import { CartItemQuantityControls } from "@/features/cart/components/CartItemQuantityControls";
 import { AvailabilityBadge } from "@/features/catalog/components/AvailabilityBadge";
 import { getDiscountedPrice } from "@/features/catalog/utils/price";
 import { cn } from "@/lib/utils";
@@ -128,7 +128,7 @@ export function ProductRow({
         onKeyDown={(e) => e.stopPropagation()}
       >
         {canManageCart && inCartQty > 0 && onChangeCartQuantity ? (
-          <CartLineQuantityControls
+          <CartItemQuantityControls
             quantity={inCartQty}
             minQuantity={product.minimumOrderQuantity ?? 1}
             disabled={isLoading}

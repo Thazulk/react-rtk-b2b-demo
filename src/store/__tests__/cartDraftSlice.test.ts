@@ -1,14 +1,15 @@
 import { authReducer, clearSession, setSession } from "@/store/authSlice";
 import {
-  addOrIncrementDraftLine,
+  addOrIncrementDraftItem,
   cartDraftReducer,
   hydrateUserCartFromApi,
   selectCartQuantitiesMap,
   selectUserDraftSubtotal,
-  setDraftLineQuantity,
+  setDraftItemQuantity,
 } from "@/store/cartDraftSlice";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { describe, expect, it } from "vitest";
+
 const testUser = {
   id: 99,
   firstName: "A",
@@ -29,7 +30,7 @@ function createStore() {
 }
 
 describe("cartDraftSlice", () => {
-  it("hydrateUserCartFromApi seeds lines when user draft is empty", () => {
+  it("hydrateUserCartFromApi seeds items when user draft is empty", () => {
     const store = createStore();
     store.dispatch(
       hydrateUserCartFromApi({
@@ -50,15 +51,15 @@ describe("cartDraftSlice", () => {
       }),
     );
     const draft = store.getState().cartDraft.byUserId[String(testUser.id)];
-    expect(draft?.lines).toHaveLength(1);
-    expect(draft?.lines[0].quantity).toBe(2);
+    expect(draft?.items).toHaveLength(1);
+    expect(draft?.items[0].quantity).toBe(2);
     expect(draft?.suppressApiHydrate).toBe(true);
   });
 
   it("selectCartQuantitiesMap returns id → quantity", () => {
     const store = createStore();
     store.dispatch(
-      addOrIncrementDraftLine({
+      addOrIncrementDraftItem({
         userId: testUser.id,
         product: {
           id: 3,
@@ -78,7 +79,7 @@ describe("cartDraftSlice", () => {
   it("selectUserDraftSubtotal applies discount percentage", () => {
     const store = createStore();
     store.dispatch(
-      addOrIncrementDraftLine({
+      addOrIncrementDraftItem({
         userId: testUser.id,
         product: {
           id: 1,
@@ -93,10 +94,10 @@ describe("cartDraftSlice", () => {
     expect(selectUserDraftSubtotal(state as never, testUser.id)).toBe(80);
   });
 
-  it("setDraftLineQuantity removes line when quantity is 0", () => {
+  it("setDraftItemQuantity removes item when quantity is 0", () => {
     const store = createStore();
     store.dispatch(
-      addOrIncrementDraftLine({
+      addOrIncrementDraftItem({
         userId: testUser.id,
         product: {
           id: 7,
@@ -108,14 +109,14 @@ describe("cartDraftSlice", () => {
       }),
     );
     store.dispatch(
-      setDraftLineQuantity({
+      setDraftItemQuantity({
         userId: testUser.id,
         productId: 7,
         quantity: 0,
       }),
     );
     expect(
-      store.getState().cartDraft.byUserId[String(testUser.id)]?.lines,
+      store.getState().cartDraft.byUserId[String(testUser.id)]?.items,
     ).toEqual([]);
   });
 
@@ -128,7 +129,7 @@ describe("cartDraftSlice", () => {
       }),
     );
     store.dispatch(
-      addOrIncrementDraftLine({
+      addOrIncrementDraftItem({
         userId: testUser.id,
         product: {
           id: 1,

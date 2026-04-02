@@ -4,16 +4,16 @@ import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { selectActiveCartId, selectUser } from "@/store/authSlice";
 import {
-  addOrIncrementDraftLine,
+  addOrIncrementDraftItem,
   selectCartQuantitiesMap,
   selectUserDraft,
   selectUserDraftSubtotal,
-  setDraftLineQuantity,
+  setDraftItemQuantity,
 } from "@/store/cartDraftSlice";
 import { useUpdateCartMutation } from "@/store/dummyJsonApi";
 import type { Product } from "@/types/dummyjson";
 
-interface DraftLineLike {
+interface DraftItemLike {
   id: number;
   title: string;
   price: number;
@@ -23,15 +23,15 @@ interface DraftLineLike {
 }
 
 interface CartLike {
-  products: DraftLineLike[];
+  products: DraftItemLike[];
 }
 
-function resolveSourceLines(
+function resolveSourceItems(
   draft: ReturnType<typeof selectUserDraft>,
   activeCart: CartLike | undefined,
-): DraftLineLike[] {
-  if (draft?.lines) {
-    return draft.lines;
+): DraftItemLike[] {
+  if (draft?.items) {
+    return draft.items;
   }
   if (!activeCart) {
     return [];
@@ -68,7 +68,7 @@ export function useCartActions() {
     const moq = product.minimumOrderQuantity ?? 1;
 
     dispatch(
-      addOrIncrementDraftLine({
+      addOrIncrementDraftItem({
         userId: user.id,
         product: {
           id: product.id,
@@ -81,15 +81,15 @@ export function useCartActions() {
       }),
     );
 
-    const previousLines = resolveSourceLines(draft, activeCart);
-    const existingLine = previousLines.find((line) => line.id === product.id);
+    const previousItems = resolveSourceItems(draft, activeCart);
+    const existingItem = previousItems.find((item) => item.id === product.id);
     const initialQty = Math.max(1, moq);
-    const nextLines = existingLine
-      ? previousLines.map((line) =>
-          line.id === product.id ? { ...line, quantity: line.quantity + 1 } : line,
+    const nextItems = existingItem
+      ? previousItems.map((item) =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item,
         )
       : [
-          ...previousLines,
+          ...previousItems,
           {
             id: product.id,
             title: product.title,
@@ -106,14 +106,14 @@ export function useCartActions() {
           cartId: activeCartId,
           body: {
             merge: true,
-            products: nextLines.map((line) => ({ id: line.id, quantity: line.quantity })),
+            products: nextItems.map((item) => ({ id: item.id, quantity: item.quantity })),
           },
-          optimisticProducts: nextLines.map((line) => ({
-            id: line.id,
-            title: line.title,
-            price: line.price,
-            discountPercentage: line.discountPercentage,
-            thumbnail: line.thumbnail,
+          optimisticProducts: nextItems.map((item) => ({
+            id: item.id,
+            title: item.title,
+            price: item.price,
+            discountPercentage: item.discountPercentage,
+            thumbnail: item.thumbnail,
           })),
         }).unwrap();
       } catch {
@@ -122,29 +122,29 @@ export function useCartActions() {
     }
   };
 
-  const changeLineQuantity = async (productId: number, nextQuantity: number) => {
+  const changeItemQuantity = async (productId: number, nextQuantity: number) => {
     if (!user) {
       return;
     }
 
     const safeQuantity = Math.max(0, nextQuantity);
-    const sourceLines = resolveSourceLines(draft, activeCart);
+    const sourceItems = resolveSourceItems(draft, activeCart);
 
     dispatch(
-      setDraftLineQuantity({
+      setDraftItemQuantity({
         userId: user.id,
         productId,
         quantity: safeQuantity,
       }),
     );
 
-    const nextProducts = sourceLines
-      .map((line) =>
-        line.id === productId
-          ? { id: line.id, quantity: safeQuantity }
-          : { id: line.id, quantity: line.quantity },
+    const nextProducts = sourceItems
+      .map((item) =>
+        item.id === productId
+          ? { id: item.id, quantity: safeQuantity }
+          : { id: item.id, quantity: item.quantity },
       )
-      .filter((line) => line.quantity > 0);
+      .filter((item) => item.quantity > 0);
 
     if (!activeCartId) {
       return;
@@ -154,12 +154,12 @@ export function useCartActions() {
       await updateCart({
         cartId: activeCartId,
         body: { merge: true, products: nextProducts },
-        optimisticProducts: sourceLines.map((line) => ({
-          id: line.id,
-          title: line.title,
-          price: line.price,
-          discountPercentage: line.discountPercentage,
-          thumbnail: line.thumbnail,
+        optimisticProducts: sourceItems.map((item) => ({
+          id: item.id,
+          title: item.title,
+          price: item.price,
+          discountPercentage: item.discountPercentage,
+          thumbnail: item.thumbnail,
         })),
       }).unwrap();
     } catch {
@@ -177,6 +177,6 @@ export function useCartActions() {
     isUpdatingCart,
     isBootstrappingCart,
     addToCart,
-    changeLineQuantity,
+    changeItemQuantity,
   };
 }

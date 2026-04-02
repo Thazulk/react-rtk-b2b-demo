@@ -2,7 +2,7 @@ import { Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 
-interface CartLineQuantityControlsProps {
+interface CartItemQuantityControlsProps {
   quantity: number;
   /** Minimum allowed quantity; decrement is disabled at this floor. Defaults to 1. */
   minQuantity?: number;
@@ -12,14 +12,14 @@ interface CartLineQuantityControlsProps {
   onRemove: () => void;
 }
 
-export function CartLineQuantityControls({
+export function CartItemQuantityControls({
   quantity,
   minQuantity = 1,
   disabled = false,
   onDecrement,
   onIncrement,
   onRemove,
-}: CartLineQuantityControlsProps) {
+}: CartItemQuantityControlsProps) {
   const { t } = useTranslation();
   const atFloor = quantity <= minQuantity;
 
@@ -38,7 +38,7 @@ export function CartLineQuantityControls({
         className="text-destructive hover:text-destructive"
         disabled={disabled}
         onClick={onRemove}
-        aria-label={t("cart.removeLine")}
+        aria-label={t("cart.removeItem")}
       >
         <Trash2 className="size-4" aria-hidden="true" />
       </Button>

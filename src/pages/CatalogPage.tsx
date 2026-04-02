@@ -29,7 +29,7 @@ export function CatalogPage() {
     isUpdatingCart,
     isBootstrappingCart,
     addToCart,
-    changeLineQuantity,
+    changeItemQuantity,
   } = useCartActions();
 
   return (
@@ -53,7 +53,7 @@ export function CatalogPage() {
         products={products}
         cartQuantities={user ? cartQuantities : undefined}
         onChangeCartQuantity={
-          user ? (productId, next) => void changeLineQuantity(productId, next) : undefined
+          user ? (productId, next) => void changeItemQuantity(productId, next) : undefined
         }
         onAddToCart={(product) => void addToCart(product)}
         onProductNavigate={(product) => navigate(`/catalog/${product.id}`)}

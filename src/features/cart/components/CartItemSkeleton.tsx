@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function CartLineSkeleton() {
+export function CartItemSkeleton() {
   return (
     <div className="flex items-center justify-between rounded-lg border p-3">
       <div className="flex flex-col gap-2">

@@ -105,7 +105,7 @@ export const enUS = {
       empty: "Your cart is currently empty.",
       quantityAndPrice: "{{quantity}} pcs x {{price}} EUR",
       total: "Total: {{total}} EUR",
-      removeLine: "Remove line",
+      removeItem: "Remove item",
     },
   },
 } as const;

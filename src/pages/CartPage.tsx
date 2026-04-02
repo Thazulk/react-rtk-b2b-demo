@@ -1,6 +1,6 @@
 import { CartManager } from "@/features/cart/components/CartManager";
 import { useCartActions } from "@/features/cart/hooks/use-cart-actions";
-import { buildCartLines } from "@/features/cart/utils/build-cart-lines";
+import { buildCartItems } from "@/features/cart/utils/build-cart-items";
 
 export function CartPage() {
   const {
@@ -10,20 +10,20 @@ export function CartPage() {
     activeCart,
     draftSubtotal,
     isBootstrappingCart,
-    changeLineQuantity,
+    changeItemQuantity,
   } = useCartActions();
 
-  const cartLines = buildCartLines(draft?.lines, activeCart?.products);
+  const cartItems = buildCartItems(draft?.items, activeCart?.products);
 
   return (
     <div className="flex min-h-0 w-full flex-1 flex-col">
       <CartManager
         activeCartId={activeCartId}
-        lines={cartLines}
+        items={cartItems}
         subtotal={draftSubtotal}
-        showLineSkeletons={Boolean(user) && isBootstrappingCart && cartLines.length === 0}
+        showItemSkeletons={Boolean(user) && isBootstrappingCart && cartItems.length === 0}
         onChangeQuantity={(productId, nextQuantity) =>
-          void changeLineQuantity(productId, nextQuantity)
+          void changeItemQuantity(productId, nextQuantity)
         }
       />
     </div>

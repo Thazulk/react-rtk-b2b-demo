@@ -1,4 +1,4 @@
-export interface CartLineView {
+export interface CartItemView {
   product: {
     id: number;
     title: string;

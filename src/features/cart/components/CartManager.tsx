@@ -1,30 +1,30 @@
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CartLineRow } from "@/features/cart/components/CartLineRow";
-import { CartLineSkeleton } from "@/features/cart/components/CartLineSkeleton";
-import type { CartLineView } from "@/features/cart/types/cart-line-view";
+import { CartItemRow } from "@/features/cart/components/CartItemRow";
+import { CartItemSkeleton } from "@/features/cart/components/CartItemSkeleton";
+import type { CartItemView } from "@/features/cart/types/cart-item-view";
 
-const CART_LINE_SKELETON_COUNT = 4;
+const CART_ITEM_SKELETON_COUNT = 4;
 
 interface CartManagerProps {
   activeCartId: number | null;
-  lines: CartLineView[];
+  items: CartItemView[];
   subtotal?: number;
-  showLineSkeletons?: boolean;
+  showItemSkeletons?: boolean;
   onChangeQuantity: (productId: number, nextQuantity: number) => void;
 }
 
 export function CartManager({
   activeCartId,
-  lines,
+  items,
   subtotal: subtotalProp,
-  showLineSkeletons = false,
+  showItemSkeletons = false,
   onChangeQuantity,
 }: CartManagerProps) {
   const { t } = useTranslation();
   const subtotal =
     subtotalProp ??
-    lines.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
+    items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
   return (
     <Card className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
@@ -35,17 +35,17 @@ export function CartManager({
       <CardContent className="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden p-0">
         <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-2">
           <div className="flex flex-col gap-3">
-            {showLineSkeletons ? (
-              Array.from({ length: CART_LINE_SKELETON_COUNT }, (_, i) => (
-                <CartLineSkeleton key={i} />
+            {showItemSkeletons ? (
+              Array.from({ length: CART_ITEM_SKELETON_COUNT }, (_, i) => (
+                <CartItemSkeleton key={i} />
               ))
-            ) : lines.length === 0 ? (
+            ) : items.length === 0 ? (
               <p className="text-sm text-muted-foreground">{t("cart.empty")}</p>
             ) : (
-              lines.map((line) => (
-                <CartLineRow
-                  key={line.product.id}
-                  line={line}
+              items.map((item) => (
+                <CartItemRow
+                  key={item.product.id}
+                  item={item}
                   onChangeQuantity={onChangeQuantity}
                 />
               ))

@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CartLineQuantityControls } from "@/features/cart/components/CartLineQuantityControls";
+import { CartItemQuantityControls } from "@/features/cart/components/CartItemQuantityControls";
 import { useCartActions } from "@/features/cart/hooks/use-cart-actions";
 import { getDiscountedPrice } from "@/features/catalog/utils/price";
 import { getAvailabilityColorClass } from "@/features/catalog/utils/availability";
@@ -28,7 +28,7 @@ export function ProductDetailPage() {
     isUpdatingCart,
     isBootstrappingCart,
     addToCart,
-    changeLineQuantity,
+    changeItemQuantity,
   } = useCartActions();
 
   const cartQty = cartQuantities[productId] ?? 0;
@@ -209,13 +209,13 @@ export function ProductDetailPage() {
 
               {user ? (
                 cartQty > 0 ? (
-                  <CartLineQuantityControls
+                  <CartItemQuantityControls
                     quantity={cartQty}
                     minQuantity={moq}
                     disabled={isUpdatingCart || isBootstrappingCart}
-                    onDecrement={() => void changeLineQuantity(productId, cartQty - 1)}
-                    onIncrement={() => void changeLineQuantity(productId, cartQty + 1)}
-                    onRemove={() => void changeLineQuantity(productId, 0)}
+                    onDecrement={() => void changeItemQuantity(productId, cartQty - 1)}
+                    onIncrement={() => void changeItemQuantity(productId, cartQty + 1)}
+                    onRemove={() => void changeItemQuantity(productId, 0)}
                   />
                 ) : (
                   <Button

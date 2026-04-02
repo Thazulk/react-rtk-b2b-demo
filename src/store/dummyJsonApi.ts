@@ -2,7 +2,6 @@ import type { AuthState } from "@/store/authSlice";
 import { clearSession } from "@/store/authSlice";
 import type { RootState } from "@/store/store";
 import type {
-  AddCartRequest,
   Cart,
   CartListResponse,
   CartProduct,
@@ -34,7 +33,6 @@ interface OptimisticProductMeta {
 interface UpdateCartMutationArgs {
   cartId: number;
   body: UpdateCartRequest;
-  userId?: number;
   optimisticProducts?: OptimisticProductMeta[];
 }
 
@@ -95,16 +93,6 @@ export const dummyJsonApi = createApi({
     getCartById: builder.query<Cart, number>({
       query: (cartId) => `/carts/${cartId}`,
       providesTags: (_result, _error, cartId) => [{ type: "Cart", id: cartId }],
-    }),
-    addCart: builder.mutation<Cart, AddCartRequest>({
-      query: (body) => ({
-        url: "/carts/add",
-        method: "POST",
-        body,
-      }),
-      invalidatesTags: (_result, _error, arg) => [
-        { type: "CartsByUser", id: arg.userId },
-      ],
     }),
     updateCart: builder.mutation<Cart, UpdateCartMutationArgs>({
       query: ({ cartId, body }) => ({
@@ -203,10 +191,6 @@ export const dummyJsonApi = createApi({
           patchResult.undo();
         }
       },
-      invalidatesTags: (_result, _error, arg) => [
-        { type: "Cart", id: arg.cartId },
-        ...(arg.userId ? [{ type: "CartsByUser" as const, id: arg.userId }] : []),
-      ],
     }),
   }),
 });
@@ -217,6 +201,5 @@ export const {
   useGetProductsQuery,
   useGetCartsByUserQuery,
   useGetCartByIdQuery,
-  useAddCartMutation,
   useUpdateCartMutation,
 } = dummyJsonApi;

@@ -2,7 +2,7 @@ import type { RootState } from "@/store/store";
 import type { CartProduct } from "@/types/dummyjson";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-export interface CartDraftLine {
+interface CartDraftLine {
   id: number;
   title: string;
   price: number;
@@ -61,21 +61,6 @@ const cartDraftSlice = createSlice({
         })),
         suppressApiHydrate: true,
       };
-    },
-    setUserDraftCartId: (
-      state,
-      action: PayloadAction<{
-        userId: number;
-        cartId: number | null;
-      }>,
-    ) => {
-      const userKey = String(action.payload.userId);
-      const current = state.byUserId[userKey] ?? {
-        cartId: null,
-        lines: [],
-      };
-      current.cartId = action.payload.cartId;
-      state.byUserId[userKey] = current;
     },
     addOrIncrementDraftLine: (
       state,
@@ -138,19 +123,13 @@ const cartDraftSlice = createSlice({
       current.suppressApiHydrate = true;
       state.byUserId[userKey] = current;
     },
-    clearUserDraft: (state, action: PayloadAction<{ userId: number }>) => {
-      const userKey = String(action.payload.userId);
-      delete state.byUserId[userKey];
-    },
   },
 });
 
 export const {
   hydrateUserCartFromApi,
-  setUserDraftCartId,
   addOrIncrementDraftLine,
   setDraftLineQuantity,
-  clearUserDraft,
 } = cartDraftSlice.actions;
 
 export const cartDraftReducer = cartDraftSlice.reducer;

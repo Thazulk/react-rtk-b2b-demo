@@ -14,21 +14,15 @@ import {
 } from "redux-persist";
 import createWebStorage from "redux-persist/es/storage/createWebStorage";
 
-const createNoopStorage = () => ({
-  getItem: (_key: string) => Promise.resolve(null),
+const noopStorage = {
+  getItem: () => Promise.resolve(null),
   setItem: (_key: string, value: string) => Promise.resolve(value),
-  removeItem: (_key: string) => Promise.resolve(),
-});
+  removeItem: () => Promise.resolve(),
+};
 
-const storage =
-  typeof window === "undefined"
-    ? createNoopStorage()
-    : createWebStorage("local");
-
-const authStorage =
-  typeof window === "undefined"
-    ? createNoopStorage()
-    : createWebStorage("session");
+const isServer = typeof window === "undefined";
+const storage = isServer ? noopStorage : createWebStorage("local");
+const authStorage = isServer ? noopStorage : createWebStorage("session");
 
 const authPersistConfig = {
   key: "auth",

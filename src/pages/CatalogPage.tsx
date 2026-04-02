@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
 import { ProductCatalog } from "@/features/catalog/components/ProductCatalog";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { selectActiveCartId, selectUser } from "@/store/authSlice";
 import {
   addOrIncrementDraftLine,
-  hydrateUserCartFromApi,
   selectUserDraft,
   setDraftLineQuantity,
 } from "@/store/cartDraftSlice";
@@ -41,19 +40,6 @@ export function CatalogPage() {
     }
     return map;
   }, [draft?.lines]);
-
-  useEffect(() => {
-    if (!user || !activeCart) {
-      return;
-    }
-    dispatch(
-      hydrateUserCartFromApi({
-        userId: user.id,
-        cartId: activeCart.id,
-        products: activeCart.products,
-      }),
-    );
-  }, [activeCart, dispatch, user]);
 
   const handleAddToCart = async (productId: number) => {
     if (!user || !productsData) {
@@ -111,7 +97,6 @@ export function CatalogPage() {
       try {
         await updateCart({
           cartId: activeCartId,
-          userId: user.id,
           body: {
             merge: true,
             products: nextLines.map((line) => ({
@@ -174,7 +159,6 @@ export function CatalogPage() {
     try {
       await updateCart({
         cartId: activeCartId,
-        userId: user.id,
         body: {
           merge: true,
           products: nextProducts,

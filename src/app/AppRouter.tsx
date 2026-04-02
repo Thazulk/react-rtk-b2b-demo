@@ -1,10 +1,12 @@
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import { ProtectedLayout, RootLayout } from "@/app/layouts";
-import { CartPage } from "@/pages/CartPage";
-import { CatalogPage } from "@/pages/CatalogPage";
-import { DashboardPage } from "@/pages/DashboardPage";
-import { LoginPage } from "@/pages/LoginPage";
-import { ProfilePage } from "@/pages/ProfilePage";
+import {
+  CartPage,
+  CatalogPage,
+  DashboardPage,
+  LoginPage,
+  ProfilePage,
+} from "@/pages";
 
 const router = createBrowserRouter([
   {

@@ -1,5 +1,6 @@
 import { useAppDispatch } from "@/store";
 import { setActiveCartId } from "@/store/authSlice";
+import { hydrateUserCartFromApi } from "@/store/cartDraftSlice";
 import {
   useGetCartByIdQuery,
   useGetCartsByUserQuery,
@@ -54,6 +55,19 @@ export function useActiveCart({ userId, activeCartId }: UseActiveCartParams) {
       dispatch(setActiveCartId(null));
     }
   }, [activeCartError, dispatch, userId]);
+
+  useEffect(() => {
+    if (!userId || !activeCart) {
+      return;
+    }
+    dispatch(
+      hydrateUserCartFromApi({
+        userId,
+        cartId: activeCart.id,
+        products: activeCart.products,
+      }),
+    );
+  }, [activeCart, dispatch, userId]);
 
   return {
     activeCartId,

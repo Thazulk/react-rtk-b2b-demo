@@ -120,18 +120,9 @@ export interface CartProductInput {
   quantity: number;
 }
 
-export interface AddCartRequest {
-  userId: number;
-  products: CartProductInput[];
-}
-
 export interface UpdateCartRequest {
   merge: boolean;
   products: CartProductInput[];
-}
-
-export interface UserListResponse extends PaginationMeta {
-  users: User[];
 }
 
 export interface ProductListResponse extends PaginationMeta {

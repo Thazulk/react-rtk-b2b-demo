@@ -43,7 +43,6 @@ const authSlice = createSlice({
 export const { setSession, clearSession, setActiveCartId } = authSlice.actions;
 export const authReducer = authSlice.reducer;
 
-export const selectAuth = (state: RootState) => state.auth;
 export const selectAccessToken = (state: RootState) => state.auth.accessToken;
 export const selectUser = (state: RootState) => state.auth.user;
 export const selectActiveCartId = (state: RootState) => state.auth.activeCartId;

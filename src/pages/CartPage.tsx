@@ -1,13 +1,8 @@
-import { useEffect } from "react";
 import { CartManager } from "@/features/cart/components/CartManager";
 import { useActiveCart } from "@/features/cart/hooks/use-active-cart";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { selectActiveCartId, selectUser } from "@/store/authSlice";
-import {
-  hydrateUserCartFromApi,
-  selectUserDraft,
-  setDraftLineQuantity,
-} from "@/store/cartDraftSlice";
+import { selectUserDraft, setDraftLineQuantity } from "@/store/cartDraftSlice";
 import { useUpdateCartMutation } from "@/store/dummyJsonApi";
 
 export function CartPage() {
@@ -21,19 +16,6 @@ export function CartPage() {
     activeCartId,
   });
   const [updateCart] = useUpdateCartMutation();
-
-  useEffect(() => {
-    if (!user || !activeCart) {
-      return;
-    }
-    dispatch(
-      hydrateUserCartFromApi({
-        userId: user.id,
-        cartId: activeCart.id,
-        products: activeCart.products,
-      }),
-    );
-  }, [activeCart, dispatch, user]);
 
   const sourceLines =
     draft?.lines ??
@@ -92,7 +74,6 @@ export function CartPage() {
     try {
       await updateCart({
         cartId: activeCartId,
-        userId: user.id,
         body: {
           merge: true,
           products: nextProducts,
